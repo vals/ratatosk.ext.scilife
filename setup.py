@@ -37,7 +37,7 @@ setup(name = "ratatosk.scilife",
       #   ],
       package_data = {
         'ratatosk':[
-            'config/*'
+            'config/scilife/*',
             ]}
       )
 
