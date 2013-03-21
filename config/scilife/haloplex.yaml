@@ -56,3 +56,7 @@ gatk:
   # Finally, make BaseRecalibrator depend on RawIndelRealigner
   BaseRecalibrator:
     parent_task: ratatosk.pipeline.haloplex.RawIndelRealigner
+
+pipeline:
+  HaloPlex:
+    target_generator_function: ratatosk.scilife.sample.target_generator
