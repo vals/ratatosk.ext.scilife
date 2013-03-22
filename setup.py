@@ -17,7 +17,7 @@ import sys
 import os
 import glob
 
-setup(name = "ratatosk.scilife",
+setup(name = "ratatosk.ext.scilife",
       version = "0.1.0",
       author = "Per Unneberg",
       author_email = "per.unneberg@scilifelab.se",
