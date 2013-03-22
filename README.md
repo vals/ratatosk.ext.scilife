@@ -1,6 +1,6 @@
-## ratatosk.scilife ##
+## ratatosk.ext.scilife ##
 
-`ratatosk.scilife` is a `ratatosk` library addon. It contains
+`ratatosk.ext.scilife` is a `ratatosk` library extension. It contains
 functions, configuration and customized scripts for running ratatosk
 tasks at Science for Life Laboratory. Among other things, the module
 is designed to work out of the box with raw data delivered from the
@@ -15,9 +15,9 @@ Install `ratatosk` by following the instructions at
 
 ### Installation ###
 
-To install the development version of `ratatosk.scilife`, do
+To install the development version of `ratatosk.ext.scilife`, do
 	
-	git clone https://github.com/percyfal/ratatosk.scilife
+	git clone https://github.com/percyfal/ratatosk.ext.scilife
 	python setup.py develop
 
 ## Implementation ##
@@ -26,9 +26,10 @@ To install the development version of `ratatosk.scilife`, do
 
 ## Scripts ##
 
-### scilife_run_ratatosk.py ###
+### run_ratatosk_scilife.py ###
 
 ### submit_ratatosk_job.py ###
 
-`submit_ratatosk_job.py` is a simple wrapper
+`submit_ratatosk_job.py` is a simple wrapper that uses the python
+module `drmaa` for submitting ratatosk jobs to a cluster.
 
