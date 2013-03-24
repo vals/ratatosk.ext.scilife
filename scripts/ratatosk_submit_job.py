@@ -20,6 +20,7 @@ import sys
 import argparse
 import itertools
 import logging
+from ratatosk.ext.scilife.sample import target_generator, make_fastq_links
 
 logging.basicConfig(level=logging.INFO)
 
@@ -87,7 +88,7 @@ def dry(message, func, dry_run=True, *args, **kw):
     return func(*args, **kw)
 
 def drmaa(cmd_args, pargs, capture=True, ignore_error=False, cwd=None):
-    kw = **vars(pargs)
+    kw = vars(pargs)
     job_args = make_job_template_args(opt_to_dict(pargs.extra), **kw)
     command = " ".join(cmd_args)
     def runpipe():
@@ -231,7 +232,7 @@ if __name__ == "__main__":
 
     # Sample parser group
     sample_group = parser.add_argument_group("Sample options")
-    sample_group.add_argument('input_dir', type=str,
+    sample_group.add_argument('indir', type=str,
                               help='Input directory. Assumes that data in input directory is organized by sample/flowcell/sequences.fastq.gz')
     sample_group.add_argument('-O', '--output_dir', type=str, default='input directory',
                               help='Output directory. ')
@@ -263,9 +264,16 @@ if __name__ == "__main__":
     # nodes. This is somewhat convoluted since ratatosk_run_scilife
     # also collects sample information, but this step is necessary as
     # we need to wrap ratatosk_run_scilife.py in drmaa
+    targets = target_generator(indir=pargs.indir, sample=pargs.sample,
+                               flowcell=pargs.flowcell, lane=pargs.lane)
+    # After getting run list, if output directory is different to
+    # input directory, link raw data files to output directory and
+    # remember to use this directory for ratatosk tasks. In this way
+    # we actually can run on subsets of sample runs or flowcells
+    if pargs.output_dir != pargs.indir:
+        newtargets = make_fastq_links(targets, pargs.indir, pargs.output_dir)
 
-    # sample_run_list = get_sample_run_list()
-
+    # Group samples in groups
     # sample_run_groups = partition(sample_run_list)
     # query_yes_no("Going to run ... jobs")
     # for srg in sample_run_groups:

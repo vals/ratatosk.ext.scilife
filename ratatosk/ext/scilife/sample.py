@@ -12,26 +12,25 @@
 # License for the specific language governing permissions and limitations under
 # the License.
 import os
+import glob
 import csv
 import logging
 from ratatosk.utils import rreplace
 
 logging.basicConfig(level=logging.DEBUG)
 
-def organize_sample_runs(task, cls):
-    # This currently relies on the folder structure sample/fc1,
-    # sample/fc2 etc...
-    logging.debug("Organizing samples for {}".format(task.target))
-    targetdir = os.path.dirname(task.target)
-    flowcells = [fc for fc in os.listdir(targetdir) if fc.endswith("XX")]
-    bam_list = []
-    for fc in flowcells:
-        fc_dir = os.path.join(targetdir, fc)
-        if not os.path.isdir(fc_dir):
-            continue
-        logging.debug("Looking in directory {}".format(fc))
-        # This assumes only one sample run per flowcell
-        bam_list.append(os.path.join(fc_dir, os.path.basename(rreplace(task.target, "{}{}".format(task.label, task.target_suffix), task.source_suffix, 1))))
+def collect_sample_runs(task):
+    """Collect sample runs for a sample. Since it is to be used with
+    MergeSamFiles it should return a list of targets.
+
+    :param task: current task
+
+    :return: list of bam files for each sample run in a flowcell directory
+    """
+    logging.debug("Collecting sample runs for {}".format(task.target))
+    sample_runs = target_generator(os.path.dirname(os.path.dirname(task.target)), 
+                                   sample=[os.path.basename(os.path.dirname(task.target))])
+    bam_list = [x[2] + os.path.basename(rreplace(task.target.replace(x[0], ""), "{}{}".format(task.label, task.target_suffix), task.source_suffix, 1)) for x in sample_runs]
     logging.debug("Generated target bamfile list {}".format(bam_list))
     return bam_list
 
@@ -74,3 +73,40 @@ def target_generator(indir, sample=None, flowcell=None, lane=None):
                 targets.append((s, os.path.join(sampledir, s), 
                                 os.path.join(fc_dir, "{}_{}_L00{}".format(s, line['Index'], line['Lane'] ))))
     return targets
+
+def make_fastq_links(targets, indir, outdir, fastq_suffix="001.fastq.gz", ssheet="SampleSheet.csv"):
+    """Given a set of targets and an output directory, create links
+    from targets (source raw data) to an output directory.
+
+    :param targets: list of tuples consisting of (sample, sample target prefix, sample run prefix)
+    :param outdir: (top) output directory
+    :param fastq_suffix: fastq suffix
+    :param ssheet: sample sheet name
+
+    :returns: new targets list with updated output directory
+    """
+    newtargets = []
+    for tgt in targets:
+        fastq = glob.glob("{}*{}".format(tgt[2], fastq_suffix))
+        if len(fastq) == 0:
+            logging.warn("No fastq files for prefix {} in {}".format(tgt[2], "make_fastq_links"))
+        for f in fastq:
+            newpath = os.path.join(outdir, os.path.relpath(f, indir))
+            if not os.path.exists(os.path.dirname(newpath)):
+                logging.info("Making directories to {}".format(os.path.dirname(newpath)))
+                os.makedirs(os.path.dirname(newpath))
+                if not os.path.exists(os.path.join(os.path.dirname(newpath), ssheet)):
+                    try:
+                        os.symlink(os.path.abspath(os.path.join(os.path.dirname(f), ssheet)), 
+                                   os.path.join(os.path.dirname(newpath), ssheet))
+                    except:
+                        logging.warn("No sample sheet found for {}".format())
+                        
+            if not os.path.exists(newpath):
+                logging.info("Linking {} -> {}".format(newpath, os.path.abspath(f)))
+                os.symlink(os.path.abspath(f), newpath)
+        newtargets.append((tgt[0], 
+                           os.path.join(outdir, os.path.relpath(tgt[1], indir)),
+                           os.path.join(outdir, os.path.relpath(tgt[2], indir))))
+    return newtargets
+        
