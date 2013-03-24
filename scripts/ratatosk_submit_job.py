@@ -17,6 +17,8 @@
 import re
 import os
 import sys
+import argparse
+import itertools
 import logging
 
 logging.basicConfig(level=logging.INFO)
@@ -84,70 +86,9 @@ def dry(message, func, dry_run=True, *args, **kw):
         return "(DRY_RUN): " + str(message) + "\n"
     return func(*args, **kw)
 
-def _save_job_id(jobid, idfile="JOBID", **job_args):
-    """Save jobid to file in working directory"""
-    JOBIDFILE = os.path.join(job_args['workingDirectory'], idfile)
-    with open(JOBIDFILE, "w") as fh:
-        logging.info("Saving jobid {} to file {}".format(self._meta.jobid, JOBIDFILE))
-        fh.write(jobid)
-
-def monitor(self, work_dir, idfile="JOBID"):
-    """Check for existing job"""
-    return self._monitor_job(idfile, **{'workingDirectory':work_dir})
-
-def _monitor_job(idfile="JOBID", **job_args):
-    """Check if job is currently being run or in queue. For now,
-    the user will manually have to terminate job before proceeding"""
-    JOBIDFILE = os.path.join(job_args['workingDirectory'], idfile)
-    if not os.path.exists(JOBIDFILE):
-        return 
-    logging.debug("Will read {} for jobid".format(JOBIDFILE))
-    with open(JOBIDFILE) as fh:
-        jobid = fh.read()
-    ## http://code.google.com/p/drmaa-python/wiki/Tutorial
-    decodestatus = {
-        drmaa.JobState.UNDETERMINED: 'process status cannot be determined',
-        drmaa.JobState.QUEUED_ACTIVE: 'job is queued and active',
-        drmaa.JobState.SYSTEM_ON_HOLD: 'job is queued and in system hold',
-        drmaa.JobState.USER_ON_HOLD: 'job is queued and in user hold',
-        drmaa.JobState.USER_SYSTEM_ON_HOLD: 'job is queued and in user and system hold',
-        drmaa.JobState.RUNNING: 'job is running',
-        drmaa.JobState.SYSTEM_SUSPENDED: 'job is system suspended',
-        drmaa.JobState.USER_SUSPENDED: 'job is user suspended',
-        drmaa.JobState.DONE: 'job finished normally',
-        drmaa.JobState.FAILED: 'job finished, but failed',
-        }
-    s = drmaa.Session()
-    s.initialize()
-    try:
-        status = s.jobStatus(str(jobid))
-        logging.debug("Getting status for jobid {}".format(jobid))
-        logging.info("{}".format(decodestatus[status]))
-        if status in [drmaa.JobState.QUEUED_ACTIVE, drmaa.JobState.RUNNING, drmaa.JobState.UNDETERMINED]:
-            logging.warn("{}; please terminate job before proceeding".format(decodestatus[status]))
-            return True
-    except drmaa.errors.InternalException:
-        logging.warn("No such jobid {}".format(jobid))
-        pass
-    s.exit()
-    return
-
-def drmaa(cmd_args, pargs, capture=True, ignore_error=False, cwd=None, **kw):
-    if kw.get('platform_args', None):
-        platform_args = opt_to_dict(kw['platform_args'])
-    else:
-        platform_args = opt_to_dict([])
-    kw.update(**vars(pargs))
-    job_args = make_job_template_args(platform_args, **kw)
-    if not _check_args(**kw):
-        logging.warn("missing argument; cannot proceed with drmaa command. Make sure you provide time, account, partition, and jobname")
-        return
-
-    if kw.get('monitorJob', False):
-        if _monitor_job(**job_args):
-            loging.info("exiting from {}".format(__name__) )
-            return
-
+def drmaa(cmd_args, pargs, capture=True, ignore_error=False, cwd=None):
+    kw = **vars(pargs)
+    job_args = make_job_template_args(opt_to_dict(pargs.extra), **kw)
     command = " ".join(cmd_args)
     def runpipe():
         s = drmaa.Session()
@@ -175,8 +116,6 @@ def drmaa(cmd_args, pargs, capture=True, ignore_error=False, cwd=None, **kw):
         logging.info("Error logging: {}".format(jt.errorPath))
         jobid = s.runJob(jt)
         logging.info('Your job has been submitted with id ' + jobid)
-        if kw.get('saveJobId', False):
-            _save_job_id(**job_args)
         s.deleteJobTemplate(jt)
         s.exit()
     dry(command, runpipe)
@@ -190,6 +129,8 @@ def opt_to_dict(opts):
     """
     if isinstance(opts, dict):
         return
+    if isinstance(opts, str):
+        opts = opts.split(" ")
     args = list(itertools.chain.from_iterable([x.split("=") for x in opts]))
     opt_d = {k: True if v.startswith('-') else v
              for k,v in zip(args, args[1:]+["--"]) if k.startswith('-')}
@@ -240,20 +181,21 @@ def make_job_template_args(opt_d, **kw):
     :returns: dictionary of job arguments
     """
     job_args = {}
-    job_args['jobname'] = kw.get('jobname', None) or opt_d.get('-J', None) or  opt_d.get('--job-name', None)
-    job_args['time'] = kw.get('time', None) or opt_d.get('-t', None) or  opt_d.get('--time', None)
+    job_args['jobname'] = kw.get('jobname')
+    job_args['time'] = kw.get('time')
     job_args['time'] = convert_to_drmaa_time(job_args['time'])
-    job_args['partition'] = kw.get('partition', None) or opt_d.get('-p', None) or  opt_d.get('--partition', None)
-    job_args['account'] = kw.get('account', None) or opt_d.get('-A', None) or  opt_d.get('--account', None)
-    job_args['outputPath'] = kw.get('outputPath', None) or opt_d.get('--output', None) or opt_d.get('-o', os.curdir)
-    job_args['errorPath'] = kw.get('errorPath', None) or opt_d.get('--error', None) or opt_d.get('-e', os.curdir)
-    job_args['workingDirectory'] = kw.get('workingDirectory', None) or opt_d.get('-D', os.curdir) 
-    job_args['email'] = kw.get('email', None) or opt_d.get('--mail-user', None) 
+    job_args['partition'] = kw.get('partition')
+    job_args['account'] = kw.get('account', None)
+    job_args['outputPath'] = kw.get('outputPath')
+    job_args['errorPath'] = kw.get('errorPath')
+    job_args['workingDirectory'] = kw.get('workingDirectory')
+    job_args['email'] = kw.get('email', None)
+
     invalid_keys = ["--mail-user", "--mail-type", "-o", "--output", "-D", "--workdir", "-J", "--job-name", "-p", "--partition", "-t", "--time", "-A", "--account", "-e", "--error"]
     extra_keys = [x for x in opt_d.keys() if x not in invalid_keys]
     extra_args = ["{}={}".format(x, opt_d[x]) if x.startswith("--") else "{} {}".format(x, opt_d[x]) for x in extra_keys]
-    job_args['extra'] = kw.get('extra_args', None) or extra_args
-    job_args['extra'] = " ".join(job_args['extra'])
+    job_args['extra'] = " ".join(extra_args)
+
     return job_args
 
 
@@ -264,5 +206,67 @@ if __name__ == "__main__":
     # if not has_drmaa:
     #     logging.warn("No 'drmaa' module: please install drmaa before proceeding.".format(__name__))
     #     sys.exit()
+    parser = argparse.ArgumentParser(description='ratatosk submit job arguments.',
+                                     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    # Drmaa parser group
+    group = parser.add_argument_group("Drmaa options")
+    group.add_argument('-A', '--account', type=str, required=True,
+                        help='UPPMAX project account id')
+    group.add_argument('-p', '--partition', type=str, default="node",
+                        help='partition type.', choices=["node", "core", "mem72GB", "fat"])
+    group.add_argument('-t', '--time', type=str, default="10:00:00",
+                        help='run time')
+    group.add_argument('-J', '--jobname', type=str, default="ratatosk",
+                        help='job name')
+    group.add_argument('-D', '--workingDirectory', type=str, default=os.curdir,
+                        help='working directory')
+    group.add_argument('-o', '--outputPath', type=str, default=os.curdir,
+                        help='output path for stdout')
+    group.add_argument('-e', '--errorPath', type=str, default=os.curdir,
+                        help='output path for stderr')
+    group.add_argument('--email', type=str, default=None,
+                        help='email address to send job information to')
+    group.add_argument('--extra', type=str, default=None,
+                        help='extra args to submit via drmaa, provided as string')
 
-    pass
+    # Sample parser group
+    sample_group = parser.add_argument_group("Sample options")
+    sample_group.add_argument('input_dir', type=str,
+                              help='Input directory. Assumes that data in input directory is organized by sample/flowcell/sequences.fastq.gz')
+    sample_group.add_argument('-O', '--output_dir', type=str, default='input directory',
+                              help='Output directory. ')
+    sample_group.add_argument('--sample', type=str, default=None, nargs="*",
+                              help='samples to process')
+    sample_group.add_argument('--sample_file', type=str, default=None,
+                              help='file containing samples to process, one per line')
+    sample_group.add_argument('--lane', type=int, choices=xrange(1,9), default=None,
+                              help='lanes to process')
+    sample_group.add_argument('--flowcell', type=str, default=None, nargs="*",
+                              help='email address to send job information to')
+    sample_group.add_argument('-N', '--batch_size', type=int, default=4,
+                              help='number of samples to process per node')
+
+    # Ratatosk parser group
+    # These arguments are directly passed to ratatosk
+    ratatosk_group = parser.add_argument_group("Ratatosk options. These arguments are passed directly to ratatosk_run_scilife.py")
+    ratatosk_group.add_argument('--config-file', type=str,
+                                help='configuration file')
+    ratatosk_group.add_argument('--custom-config', type=str, default=None,
+                                help='custom configuration file')
+    ratatosk_group.add_argument('--workers', type=int, default=4,
+                                help='number of workers to use')
+
+    # Parse arguments
+    pargs = parser.parse_args()
+
+    # Collect information about what samples to run, and on how many
+    # nodes. This is somewhat convoluted since ratatosk_run_scilife
+    # also collects sample information, but this step is necessary as
+    # we need to wrap ratatosk_run_scilife.py in drmaa
+
+    # sample_run_list = get_sample_run_list()
+
+    # sample_run_groups = partition(sample_run_list)
+    # query_yes_no("Going to run ... jobs")
+    # for srg in sample_run_groups:
+    # drmaa(srg)
