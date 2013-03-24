@@ -9,13 +9,17 @@ picard:
   InputBamFile:
     parent_task: ratatosk.lib.tools.samtools.SamToBam
   HsMetrics:
-    parent_task: ratatosk.lib.tools.picard.SortSam
+    parent_task: ratatosk.lib.tools.picard.DuplicationMetrics
+    #parent_task: ratatosk.lib.tools.picard.SortSam
   DuplicationMetrics:
-    parent_task: ratatosk.lib.tools.picard.SortSam
+    parent_task: ratatosk.lib.tools.picard.MergeSamFiles
+    #parent_task: ratatosk.lib.tools.picard.SortSam
   AlignmentMetrics:
-    parent_task: ratatosk.lib.tools.picard.SortSam
+    parent_task: ratatosk.lib.tools.picard.DuplicationMetrics
+    #parent_task: ratatosk.lib.tools.picard.SortSam
   InsertMetrics:
-    parent_task: ratatosk.lib.tools.picard.SortSam
+    parent_task: ratatosk.lib.tools.picard.DuplicationMetrics
+    #parent_task: ratatosk.lib.tools.picard.SortSam
 
 samtools:
   SamToBam:
