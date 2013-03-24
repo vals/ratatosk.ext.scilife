@@ -20,7 +20,8 @@ import sys
 import argparse
 import itertools
 import logging
-from ratatosk.ext.scilife.sample import target_generator, make_fastq_links
+from ratatosk.ext.scilife.sample import target_generator
+from ratatosk.utils import make_fastq_links
 
 logging.basicConfig(level=logging.INFO)
 

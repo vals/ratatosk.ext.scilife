@@ -84,14 +84,6 @@ class TestFunctions(unittest.TestCase):
         self.assertEqual(sorted([os.path.basename(os.path.dirname(x[2])) for x in tl]), ['120924_AC003CCCXX'])
         self.assertEqual(sorted([os.path.basename(x[0]) for x in tl]), ['P001_101_index3'])
 
-    def test_make_fastq_links(self):
-        """Test making fastq links"""
-        tl = target_generator(indir=self.project)
-        fql = make_fastq_links(tl, indir=self.project, outdir="tmp")
-        self.assertTrue(os.path.lexists(os.path.join("tmp", os.path.relpath(tl[0][2], self.project) + "_R1_001.fastq.gz")))
-        self.assertTrue(os.path.lexists(os.path.join("tmp", os.path.dirname(os.path.relpath(tl[0][2], self.project)),
-                                                     "SampleSheet.csv")))
-
     def test_collect_sample_runs(self):
         """Test function that collects sample runs"""
         t = Task(target=os.path.join(self.project, "P001_101_index3", "P001_101_index3.sort.merge.bam"), label=".merge", source_suffix=".bam", target_suffix=".bam")
