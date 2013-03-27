@@ -20,6 +20,7 @@ import sys
 import argparse
 import itertools
 import logging
+import copy
 from ratatosk.ext.scilife.sample import target_generator
 from ratatosk.utils import make_fastq_links
 
@@ -333,14 +334,16 @@ if __name__ == "__main__":
     jobname_default = pargs.jobname
     if len(batches) > 0 and query_yes_no("Going to start {} jobs... Are you sure you want to continue?".format(len(batches))):
         for sample_batch in batches:
+            batch_cmd = copy.deepcopy(cmd)
             if len(batches) > 1:
                 pargs.jobname = "{}_{}".format(jobname_default, batchid)
                 batchid += 1
             l = [samples[x] for x in sample_batch]
             samplelist = [item for sublist in l for item in sublist] 
             for s in sample_batch:
-                cmd += ['--sample', s]
-            logging.info("passing command '{}' to drmaa...".format(" ".join([str(x) for x in cmd])))
-            drmaa_wrapper([str(x) for x in cmd], pargs)
-
-            
+                batch_cmd += ['--sample', s]
+            logging.info("passing command '{}' to drmaa...".format(" ".join([str(x) for x in batch_cmd])))
+            drmaa_wrapper([str(x) for x in batch_cmd], pargs)
+            if pargs.partition == "devel":
+                logging.warn("only submitting 1 devel job... skipping remaining tasks")
+                break
