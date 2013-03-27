@@ -329,7 +329,7 @@ if __name__ == "__main__":
             pargs.time = "01:00:00"
 
     # Submit batch jobs
-    batches = [samples.keys()[x:x+pargs.batch_size] for x in xrange(0, len(samples.keys()), pargs.batch_size)]
+    batches = [sorted(samples.keys())[x:x+pargs.batch_size] for x in xrange(0, len(samples.keys()), pargs.batch_size)]
     batchid = 1
     jobname_default = pargs.jobname
     if len(batches) > 0 and query_yes_no("Going to start {} jobs... Are you sure you want to continue?".format(len(batches))):
