@@ -268,6 +268,8 @@ if __name__ == "__main__":
                                 help='custom configuration file')
     ratatosk_group.add_argument('--workers', type=int, default=4,
                                 help='number of workers to use')
+    ratatosk_group.add_argument('--scheduler-host', type=str, default="biologin.uppmax.uu.se",
+                                help='host that runs scheduler')
 
     # Add positional arguments. The order in which they are listed
     # defines the order they should appear on the command line
@@ -300,11 +302,9 @@ if __name__ == "__main__":
     for k, g in itertools.groupby(sorted_samples, key=lambda t:t[0]):
         samples[k] = list(g)
 
-
     # Initialize command
-    cmd = [RATATOSK_RUN, pargs.task, '--indir', pargs.indir, '--outdir', pargs.outdir, '--workers', pargs.workers]
-    # Currently we *must* use the local scheduler
-    cmd += ['--local-scheduler']
+    cmd = [RATATOSK_RUN, pargs.task, '--indir', pargs.indir, '--outdir', pargs.outdir, 
+           '--workers', pargs.workers, '--scheduler-host', pargs.scheduler_host]
     if pargs.config_file:
         logging.info("setting config to {}".format(pargs.config_file))
         cmd += ['--config-file', pargs.config_file]
@@ -327,6 +327,7 @@ if __name__ == "__main__":
             logging.info("resetting devel job time from {} to 01:00:00".format(pargs.time))
             pargs.time = "01:00:00"
 
+    # Submit batch jobs
     batches = [samples.keys()[x:x+pargs.batch_size] for x in xrange(0, len(samples.keys()), pargs.batch_size)]
     batchid = 1
     jobname_default = pargs.jobname
