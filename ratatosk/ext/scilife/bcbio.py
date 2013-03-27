@@ -16,11 +16,16 @@ import glob
 import csv
 import logging
 import yaml
+import cStringIO
+from datetime import datetime
 
-def bcbio_config_to_sample_sheet(config):
-    """Convert bcbio config file to standard Illumina SampleSheet format.
+logging.basicConfig(level=logging.DEBUG)
+
+def bcbio_config_to_sample_sheet(config, save=True):
+    """Convert bcbio config file to standard Illumina SampleSheet format. 
 
     :param config: bcbio config file
+    :param save: save results to SampleSheet.csv
 
     :returns: SampleSheet-formatted configuration (list of lists)
     """
@@ -44,4 +49,12 @@ def bcbio_config_to_sample_sheet(config):
                     "SampleProject":mp.get("sample_prj")
                     }
             ssheet.append(item)
+    if save:
+        logging.info("Saving SampleSheet.csv based on yaml file {}".format(config))
+        fh = file(os.path.join(os.path.dirname(config), "SampleSheet.csv"), "w")
+        fh.write("# Generated SampleSheet.csv from {} {} by {}\n".format(config, datetime.today().strftime("at %H:%M on %A %d, %B %Y"), __name__))
+        fh.write(",".join(keys) + "\n")
+        writer = csv.DictWriter(fh, fieldnames=keys)
+        writer.writerows(ssheet)
+        fh.close()
     return ssheet

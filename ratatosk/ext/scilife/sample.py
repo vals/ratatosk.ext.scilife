@@ -66,7 +66,8 @@ def target_generator(indir, sample=None, flowcell=None, lane=None):
             # Yes folks, we also need to know the barcode and the lane...
             # Parse the flowcell config
             if os.path.exists(os.path.join(fc_dir, "SampleSheet.csv")):
-                ssheet = csv.DictReader(open(os.path.join(fc_dir, "SampleSheet.csv"), "r"))
+                fh = file(os.path.join(fc_dir, "SampleSheet.csv"))
+                ssheet = csv.DictReader([x for x in fh if x[0] != "#"])
             else:
                 logging.warn("No sample sheet for sample '{}' in flowcell '{}';  trying bcbio format".format(s, fc))
                 runinfo = glob.glob(os.path.join(fc_dir, "{}*-bcbb-config.yaml".format(s)))
