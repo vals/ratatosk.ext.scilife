@@ -16,6 +16,7 @@ import glob
 import csv
 import logging
 from ratatosk.utils import rreplace
+from ratatosk.ext.scilife.bcbio import bcbio_config_to_sample_sheet
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -64,10 +65,16 @@ def target_generator(indir, sample=None, flowcell=None, lane=None):
             fc_dir = os.path.join(sampledir, fc)
             # Yes folks, we also need to know the barcode and the lane...
             # Parse the flowcell config
-            if not os.path.exists(os.path.join(fc_dir, "SampleSheet.csv")):
-                logging.warn("No sample sheet for sample '{}' in flowcell '{}';  skipping".format(s, fc))
-                continue
-            ssheet = csv.DictReader(open(os.path.join(fc_dir, "SampleSheet.csv"), "r"))
+            if os.path.exists(os.path.join(fc_dir, "SampleSheet.csv")):
+                ssheet = csv.DictReader(open(os.path.join(fc_dir, "SampleSheet.csv"), "r"))
+            else:
+                logging.warn("No sample sheet for sample '{}' in flowcell '{}';  trying bcbio format".format(s, fc))
+                runinfo = glob.glob(os.path.join(fc_dir, "{}*-bcbb-config.yaml".format(s)))
+                if not os.path.exists(runinfo[0]):
+                    logging.warn("No sample information for sample '{}' in flowcell '{}';  skipping".format(s, fc))
+                    continue
+                else:
+                    ssheet = bcbio_config_to_sample_sheet(runinfo[0])
             for line in ssheet:
                 logging.info("Adding sample '{0}' from flowcell '{1}' (barcode '{2}') to analysis".format(s, fc, line['Index']))
                 targets.append((s, os.path.join(sampledir, s), 
