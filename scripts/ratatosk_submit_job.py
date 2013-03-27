@@ -32,6 +32,9 @@ try:
 except:
     pass
 
+# Called script
+RATATOSK_RUN = "ratatosk_run_scilife.py"
+
 
 ## yes or no: http://stackoverflow.com/questions/3041986/python-command-line-yes-no-input
 def query_yes_no(question, default="yes", force=False):
@@ -84,11 +87,11 @@ def dry(message, func, dry_run=True, *args, **kw):
     :param **kw: keyword arguments to pass to function
     """
     if dry_run:
-        logging.debug("(DRY_RUN): " + str(message) + "\n")
+        logging.info("(DRY_RUN): " + str(message) + "\n")
         return "(DRY_RUN): " + str(message) + "\n"
     return func(*args, **kw)
 
-def drmaa(cmd_args, pargs, capture=True, ignore_error=False, cwd=None):
+def drmaa_wrapper(cmd_args, pargs, capture=True, ignore_error=False, cwd=None):
     kw = vars(pargs)
     job_args = make_job_template_args(opt_to_dict(pargs.extra), **kw)
     command = " ".join(cmd_args)
@@ -99,6 +102,7 @@ def drmaa(cmd_args, pargs, capture=True, ignore_error=False, cwd=None):
         jt.remoteCommand = cmd_args[0]
         jt.args = cmd_args[1:]
         jt.jobName = job_args['jobname']
+
         if os.path.isdir(job_args['outputPath']):
             jt.outputPath = ":" + drmaa.JobTemplate.HOME_DIRECTORY + os.sep + os.path.join(os.path.relpath(job_args['outputPath'], os.getenv("HOME")), jt.jobName + "-drmaa.log")
         else:
@@ -120,7 +124,7 @@ def drmaa(cmd_args, pargs, capture=True, ignore_error=False, cwd=None):
         logging.info('Your job has been submitted with id ' + jobid)
         s.deleteJobTemplate(jt)
         s.exit()
-    dry(command, runpipe)
+    dry(command, runpipe, dry_run=kw.get("dry_run"))
 
 def opt_to_dict(opts):
     """Transform option list to a dictionary.
@@ -202,20 +206,30 @@ def make_job_template_args(opt_d, **kw):
 
 
 if __name__ == "__main__":
-    # if not os.getenv("DRMAA_LIBRARY_PATH"):
-    #     logging.warn("No environment variable $DRMAA_LIBRARY_PATH: loading {} failed".format(__name__))
-    #     sys.exit()
-    # if not has_drmaa:
-    #     logging.warn("No 'drmaa' module: please install drmaa before proceeding.".format(__name__))
-    #     sys.exit()
+    if not os.getenv("DRMAA_LIBRARY_PATH"):
+        logging.warn("No environment variable $DRMAA_LIBRARY_PATH: loading {} failed".format(__name__))
+        sys.exit()
+    if not has_drmaa:
+        logging.warn("No 'drmaa' module: please install drmaa before proceeding.".format(__name__))
+        sys.exit()
     parser = argparse.ArgumentParser(description='ratatosk submit job arguments.',
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+
+    # Basic options
+    group = parser.add_argument_group("Common options")
+    group.add_argument('-n', '--dry_run', action="store_true", default=False, help="do a dry run (prints commands without actually running anything)")
+
     # Drmaa parser group
     group = parser.add_argument_group("Drmaa options")
     group.add_argument('-A', '--account', type=str, required=True,
                         help='UPPMAX project account id')
     group.add_argument('-p', '--partition', type=str, default="node",
-                        help='partition type.', choices=["node", "core", "mem72GB", "fat"])
+                        help='partition type.', choices=["node", "core", "devel"])
+    # nodes and num_cores are currently set via the nativeSpecification
+    # group.add_argument('-N', '--nodes', type=int, default=1,
+    #                     help='number of nodes to use. NB: currently only 1 node allowed', choices=[1])
+    # group.add_argument('-n', '--num_cores', type=int, default=1,
+    #                     help='number of cores to use.', choices=xrange(1,9))
     group.add_argument('-t', '--time', type=str, default="10:00:00",
                         help='run time')
     group.add_argument('-J', '--jobname', type=str, default="ratatosk",
@@ -228,30 +242,31 @@ if __name__ == "__main__":
                         help='output path for stderr')
     group.add_argument('--email', type=str, default=None,
                         help='email address to send job information to')
-    group.add_argument('--extra', type=str, default=None,
-                        help='extra args to submit via drmaa, provided as string')
+    group.add_argument('--extra', type=str, default=[],
+                        help='Extra specification args to submit via drmaa, provided as string (e.g. "--ntasks 4 --nodes 2 -C fat" for running 4 tasks on 2 nodes on fat partitions)')
 
     # Sample parser group
     sample_group = parser.add_argument_group("Sample options")
     sample_group.add_argument('indir', type=str,
                               help='Input directory. Assumes that data in input directory is organized by sample/flowcell/sequences.fastq.gz')
-    sample_group.add_argument('-O', '--output_dir', type=str, default='input directory',
-                              help='Output directory. ')
+    sample_group.add_argument('-O', '--outdir', type=str, default=None, help='Output directory. Defaults to input directory, (i.e. runs analysis in input directory). Setting this will create symlinks for all requested files in input directory, mirroring the input directory structure.')
     sample_group.add_argument('--sample', type=str, default=None, nargs="*",
                               help='samples to process')
     sample_group.add_argument('--sample_file', type=str, default=None,
                               help='file containing samples to process, one per line')
     sample_group.add_argument('--lane', type=int, choices=xrange(1,9), default=None,
-                              help='lanes to process')
+                              help='lanes to process', nargs="*")
     sample_group.add_argument('--flowcell', type=str, default=None, nargs="*",
-                              help='email address to send job information to')
-    sample_group.add_argument('-N', '--batch_size', type=int, default=4,
+                              help='flowcells to process')
+    sample_group.add_argument('-B', '--batch_size', type=int, default=4,
                               help='number of samples to process per node')
 
     # Ratatosk parser group
     # These arguments are directly passed to ratatosk
     ratatosk_group = parser.add_argument_group("Ratatosk options. These arguments are passed directly to ratatosk_run_scilife.py")
-    ratatosk_group.add_argument('--config-file', type=str,
+    ratatosk_group.add_argument('task', type=str,
+                              help='Task to run.')
+    ratatosk_group.add_argument('--config-file', type=str, default=None,
                                 help='configuration file')
     ratatosk_group.add_argument('--custom-config', type=str, default=None,
                                 help='custom configuration file')
@@ -271,11 +286,55 @@ if __name__ == "__main__":
     # input directory, link raw data files to output directory and
     # remember to use this directory for ratatosk tasks. In this way
     # we actually can run on subsets of sample runs or flowcells
-    if pargs.output_dir != pargs.indir:
-        newtargets = make_fastq_links(targets, pargs.indir, pargs.output_dir)
+    if not pargs.outdir:
+        pargs.outdir = pargs.indir
+    if pargs.outdir != pargs.indir:
+        targets = make_fastq_links(targets, pargs.indir, pargs.outdir)
 
-    # Group samples in groups
-    # sample_run_groups = partition(sample_run_list)
-    # query_yes_no("Going to run ... jobs")
-    # for srg in sample_run_groups:
-    # drmaa(srg)
+    # Group samples
+    sorted_samples = sorted(targets, key=lambda t:t[0])
+    samples = {}
+    for k, g in itertools.groupby(sorted_samples, key=lambda t:t[0]):
+        samples[k] = list(g)
+
+
+    # Initialize command
+    cmd = [RATATOSK_RUN, pargs.task, '--indir', pargs.indir, '--outdir', pargs.outdir, '--workers', pargs.workers]
+    # Currently we *must* use the local scheduler
+    cmd += ['--local-scheduler']
+    if pargs.config_file:
+        cmd += ['--config-file', pargs.config_file]
+    if pargs.custom_config:
+        cmd += ['--custom-config', pargs.config_file]
+    if pargs.flowcell:
+        for fc in pargs.flowcell:
+            cmd += ['--flowcell', fc]
+    if pargs.lane:
+        for lane in pargs.lane:
+            cmd += ['--lane', lane]
+
+    # If devel job requested, set time to 1 h if pargs.time is greater
+    if pargs.partition == "devel":
+        t = convert_to_drmaa_time(pargs.time)
+        (hh, mm, ss) = t.split(":")
+        mm = int(hh) * 60 + int(mm)
+        if mm > 60:
+            logging.info("resetting devel job time from {} to 01:00:00".format(pargs.time))
+            pargs.time = "01:00:00"
+
+    batches = [samples.keys()[x:x+pargs.batch_size] for x in xrange(0, len(samples.keys()), pargs.batch_size)]
+    batchid = 1
+    jobname_default = pargs.jobname
+    if len(batches) > 0 and query_yes_no("Going to start {} jobs... Are you sure you want to continue?".format(len(batches))):
+        for sample_batch in batches:
+            if len(batches) > 1:
+                pargs.jobname = "{}_{}".format(jobname_default, batchid)
+                batchid += 1
+            l = [samples[x] for x in sample_batch]
+            samplelist = [item for sublist in l for item in sublist] 
+            for s in sample_batch:
+                cmd += ['--sample', s]
+            logging.info("passing command '{}' to drmaa...".format(cmd))
+            drmaa_wrapper([str(x) for x in cmd], pargs)
+
+            
