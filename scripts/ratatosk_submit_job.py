@@ -247,8 +247,6 @@ if __name__ == "__main__":
 
     # Sample parser group
     sample_group = parser.add_argument_group("Sample options")
-    sample_group.add_argument('indir', type=str,
-                              help='Input directory. Assumes that data in input directory is organized by sample/flowcell/sequences.fastq.gz')
     sample_group.add_argument('-O', '--outdir', type=str, default=None, help='Output directory. Defaults to input directory, (i.e. runs analysis in input directory). Setting this will create symlinks for all requested files in input directory, mirroring the input directory structure.')
     sample_group.add_argument('--sample', type=str, default=None, nargs="*",
                               help='samples to process')
@@ -264,14 +262,19 @@ if __name__ == "__main__":
     # Ratatosk parser group
     # These arguments are directly passed to ratatosk
     ratatosk_group = parser.add_argument_group("Ratatosk options. These arguments are passed directly to ratatosk_run_scilife.py")
-    ratatosk_group.add_argument('task', type=str,
-                              help='Task to run.')
     ratatosk_group.add_argument('--config-file', type=str, default=None,
                                 help='configuration file')
     ratatosk_group.add_argument('--custom-config', type=str, default=None,
                                 help='custom configuration file')
     ratatosk_group.add_argument('--workers', type=int, default=4,
                                 help='number of workers to use')
+
+    # Add positional arguments. The order in which they are listed
+    # defines the order they should appear on the command line
+    ratatosk_group.add_argument('task', type=str,
+                              help='Task to run.')
+    sample_group.add_argument('indir', type=str,
+                              help='Input directory. Assumes that data in input directory is organized by sample/flowcell/sequences.fastq.gz')
 
     # Parse arguments
     pargs = parser.parse_args()
@@ -303,9 +306,11 @@ if __name__ == "__main__":
     # Currently we *must* use the local scheduler
     cmd += ['--local-scheduler']
     if pargs.config_file:
+        logging.info("setting config to {}".format(pargs.config_file))
         cmd += ['--config-file', pargs.config_file]
     if pargs.custom_config:
-        cmd += ['--custom-config', pargs.config_file]
+        logging.info("setting custom config to {}".format(pargs.custom_config))
+        cmd += ['--custom-config', pargs.custom_config]
     if pargs.flowcell:
         for fc in pargs.flowcell:
             cmd += ['--flowcell', fc]
@@ -334,7 +339,7 @@ if __name__ == "__main__":
             samplelist = [item for sublist in l for item in sublist] 
             for s in sample_batch:
                 cmd += ['--sample', s]
-            logging.info("passing command '{}' to drmaa...".format(cmd))
+            logging.info("passing command '{}' to drmaa...".format(" ".join([str(x) for x in cmd])))
             drmaa_wrapper([str(x) for x in cmd], pargs)
 
             
