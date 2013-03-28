@@ -20,6 +20,7 @@ import ratatosk.lib.align.bwa
 import ratatosk.lib.tools.gatk
 import ratatosk.lib.tools.samtools
 import ratatosk.lib.tools.picard
+import ratatosk.lib.annotation.annovar
 from ratatosk.pipeline.haloplex import HaloPlex
 from ratatosk.pipeline.align import AlignSeqcap
 from ratatosk.ext.scilife.config import config_dict

@@ -35,7 +35,7 @@ except:
 
 # Called script
 RATATOSK_RUN = "ratatosk_run_scilife.py"
-
+RATATOSKD = "ratatoskd"
 
 ## yes or no: http://stackoverflow.com/questions/3041986/python-command-line-yes-no-input
 def query_yes_no(question, default="yes", force=False):
@@ -269,7 +269,7 @@ if __name__ == "__main__":
                                 help='custom configuration file')
     ratatosk_group.add_argument('--workers', type=int, default=4,
                                 help='number of workers to use')
-    ratatosk_group.add_argument('--scheduler-host', type=str, default="biologin.uppmax.uu.se",
+    ratatosk_group.add_argument('--scheduler-host', type=str, default="localhost",
                                 help='host that runs scheduler')
 
     # Add positional arguments. The order in which they are listed
@@ -304,7 +304,10 @@ if __name__ == "__main__":
         samples[k] = list(g)
 
     # Initialize command
-    cmd = [RATATOSK_RUN, pargs.task, '--indir', pargs.indir, '--outdir', pargs.outdir, 
+    cmd = []
+    if pargs.scheduler_host == "localhost":
+        cmd += [RATATOSKD, " &; ", "sleep 10; "]
+    cmd += [RATATOSK_RUN, pargs.task, '--indir', pargs.indir, '--outdir', pargs.outdir, 
            '--workers', pargs.workers, '--scheduler-host', pargs.scheduler_host]
     if pargs.config_file:
         logging.info("setting config to {}".format(pargs.config_file))
