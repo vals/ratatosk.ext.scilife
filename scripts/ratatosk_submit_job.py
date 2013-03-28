@@ -258,6 +258,10 @@ if __name__ == "__main__":
                               help='flowcells to process')
     sample_group.add_argument('-B', '--batch_size', type=int, default=4,
                               help='number of samples to process per node')
+    sample_group.add_argument('-1', '--sample-target-suffix', type=str, default=None,
+                              help='target suffix to add to the sample target (position 1 in target generator tuple)')
+    sample_group.add_argument('-2', '--run-target-suffix', type=str, default=None,
+                              help='target suffix to add to the sample run target (position 2 in target generator tuple)')
 
     # Ratatosk parser group
     # These arguments are directly passed to ratatosk
@@ -333,20 +337,34 @@ if __name__ == "__main__":
     jobname_default = pargs.jobname
     if len(batches) > 0 and query_yes_no("Going to start {} jobs... Are you sure you want to continue?".format(len(batches))):
         for sample_batch in batches:
-            batch_cmd = copy.deepcopy(cmd)
-            if len(batches) > 1:
-                pargs.jobname = "{}_{}".format(jobname_default, batchid)
-                batchid += 1
-            l = [samples[x] for x in sample_batch]
-            samplelist = [item for sublist in l for item in sublist] 
-            for s in sample_batch:
-                batch_cmd += ['--sample', s]
-            batch_cmd = [str(x) for x in batch_cmd]
             drmaa_cmd = []
             if pargs.scheduler_host == "localhost":
                 drmaa_cmd.append([RATATOSKD, "&"])
                 drmaa_cmd.append(["sleep 10"])
-            drmaa_cmd.append(batch_cmd)
+            batch_cmd = copy.deepcopy(cmd)
+            if len(batches) > 1:
+                pargs.jobname = "{}_{}".format(jobname_default, batchid)
+                batchid += 1
+            # Decide whether to use explicit target names or sample names
+            if pargs.sample_target_suffix or pargs.run_target_suffix:
+                sfx = pargs.sample_target_suffix.lstrip("\\")
+                l = [samples[x] for x in sample_batch]
+                tasktargets = ["{}{}".format(y[0][1], sfx) for y in l]
+                # Needs rethinking: basically need a generic wrapper
+                # task that takes as input a list of targets and a
+                # class name
+                # 
+                # for t in tasktargets:
+                #     batch_cmd += ['--target', t]
+                #     batch_cmd = [str(x) for x in batch_cmd]
+                #     drmaa_cmd.append(batch_cmd)
+            else:
+                l = [samples[x] for x in sample_batch]
+                samplelist = [item for sublist in l for item in sublist] 
+                for s in sample_batch:
+                    batch_cmd += ['--sample', s]
+                batch_cmd = [str(x) for x in batch_cmd]
+                drmaa_cmd.append(batch_cmd)
             logging.info("passing command '{}' to drmaa...".format("\n".join([" ".join(x) for x in drmaa_cmd])))
             drmaa_wrapper(drmaa_cmd, pargs)
             if pargs.partition == "devel":
