@@ -95,13 +95,12 @@ def dry(message, func, dry_run=True, *args, **kw):
 def drmaa_wrapper(cmd_args, pargs, capture=True, ignore_error=False, cwd=None):
     kw = vars(pargs)
     job_args = make_job_template_args(opt_to_dict(pargs.extra), **kw)
-    command = " ".join(cmd_args)
+    command = "\n".join([" ".join(x) for x in cmd_args])
     def runpipe():
         s = drmaa.Session()
         s.initialize()
         jt = s.createJobTemplate()
-        jt.remoteCommand = cmd_args[0]
-        jt.args = cmd_args[1:]
+        jt.remoteCommand = command
         jt.jobName = job_args['jobname']
 
         if os.path.isdir(job_args['outputPath']):
@@ -304,10 +303,7 @@ if __name__ == "__main__":
         samples[k] = list(g)
 
     # Initialize command
-    cmd = []
-    if pargs.scheduler_host == "localhost":
-        cmd += [RATATOSKD, " &; ", "sleep 10; "]
-    cmd += [RATATOSK_RUN, pargs.task, '--indir', pargs.indir, '--outdir', pargs.outdir, 
+    cmd = [RATATOSK_RUN, pargs.task, '--indir', pargs.indir, '--outdir', pargs.outdir, 
            '--workers', pargs.workers, '--scheduler-host', pargs.scheduler_host]
     if pargs.config_file:
         logging.info("setting config to {}".format(pargs.config_file))
@@ -345,8 +341,14 @@ if __name__ == "__main__":
             samplelist = [item for sublist in l for item in sublist] 
             for s in sample_batch:
                 batch_cmd += ['--sample', s]
-            logging.info("passing command '{}' to drmaa...".format(" ".join([str(x) for x in batch_cmd])))
-            drmaa_wrapper([str(x) for x in batch_cmd], pargs)
+            batch_cmd = [str(x) for x in batch_cmd]
+            drmaa_cmd = []
+            if pargs.scheduler_host == "localhost":
+                drmaa_cmd.append([RATATOSKD, "&"])
+                drmaa_cmd.append(["sleep 10"])
+            drmaa_cmd.append(batch_cmd)
+            logging.info("passing command '{}' to drmaa...".format("\n".join([" ".join(x) for x in drmaa_cmd])))
+            drmaa_wrapper(drmaa_cmd, pargs)
             if pargs.partition == "devel":
                 logging.warn("only submitting 1 devel job... skipping remaining tasks")
                 break
