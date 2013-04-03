@@ -307,8 +307,12 @@ if __name__ == "__main__":
         samples[k] = list(g)
 
     # Initialize command
-    cmd = [RATATOSK_RUN, pargs.task, '--indir', pargs.indir, '--outdir', pargs.outdir, 
-           '--workers', pargs.workers, '--scheduler-host', pargs.scheduler_host]
+    if pargs.sample_target_suffix or pargs.run_target_suffix:
+        cmd = [RATATOSK_RUN, "GenericWrapper", '--workers', pargs.workers, 
+               '--scheduler-host', pargs.scheduler_host, '--task', pargs.task]
+    else:
+        cmd = [RATATOSK_RUN, pargs.task, '--indir', pargs.indir, '--outdir', pargs.outdir, 
+               '--workers', pargs.workers, '--scheduler-host', pargs.scheduler_host]
     if pargs.config_file:
         logging.info("setting config to {}".format(pargs.config_file))
         cmd += ['--config-file', pargs.config_file]
@@ -350,14 +354,11 @@ if __name__ == "__main__":
                 sfx = pargs.sample_target_suffix.lstrip("\\")
                 l = [samples[x] for x in sample_batch]
                 tasktargets = ["{}{}".format(y[0][1], sfx) for y in l]
-                # Needs rethinking: basically need a generic wrapper
-                # task that takes as input a list of targets and a
-                # class name
-                # 
-                # for t in tasktargets:
-                #     batch_cmd += ['--target', t]
-                #     batch_cmd = [str(x) for x in batch_cmd]
-                #     drmaa_cmd.append(batch_cmd)
+                batch_cmd += ['--task', pargs.task]
+                for t in tasktargets:
+                    batch_cmd += ['--generic-wrapper-target', t]
+                batch_cmd = [str(x) for x in batch_cmd]
+                drmaa_cmd.append(batch_cmd)
             else:
                 l = [samples[x] for x in sample_batch]
                 samplelist = [item for sublist in l for item in sublist] 
