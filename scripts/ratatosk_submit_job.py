@@ -22,7 +22,7 @@ import itertools
 import logging
 import copy
 from ratatosk.ext.scilife.sample import target_generator
-from ratatosk.utils import make_fastq_links
+from ratatosk.utils import make_fastq_links, opt_to_dict
 
 logging.basicConfig(level=logging.INFO)
 
@@ -125,22 +125,6 @@ def drmaa_wrapper(cmd_args, pargs, capture=True, ignore_error=False, cwd=None):
         s.deleteJobTemplate(jt)
         s.exit()
     dry(command, runpipe, dry_run=kw.get("dry_run"))
-
-def opt_to_dict(opts):
-    """Transform option list to a dictionary.
-
-    :param opts: option list
-    
-    :returns: option dictionary
-    """
-    if isinstance(opts, dict):
-        return
-    if isinstance(opts, str):
-        opts = opts.split(" ")
-    args = list(itertools.chain.from_iterable([x.split("=") for x in opts]))
-    opt_d = {k: True if v.startswith('-') else v
-             for k,v in zip(args, args[1:]+["--"]) if k.startswith('-')}
-    return opt_d
 
 def convert_to_drmaa_time(t):
     """Convert time assignment to format understood by drmaa.
