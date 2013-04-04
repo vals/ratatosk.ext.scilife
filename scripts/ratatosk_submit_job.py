@@ -322,6 +322,9 @@ if __name__ == "__main__":
     if len(batches) > 0 and query_yes_no("Going to start {} jobs... Are you sure you want to continue?".format(len(batches))):
         for sample_batch in batches:
             drmaa_cmd = []
+            # Use the local scheduler; start ratatoskd on node, wait
+            # 10 seconds to make sure it has started before running
+            # commands
             if pargs.scheduler_host == "localhost":
                 drmaa_cmd.append([RATATOSKD, "&"])
                 drmaa_cmd.append(["sleep 10"])
