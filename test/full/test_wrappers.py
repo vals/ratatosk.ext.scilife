@@ -21,6 +21,9 @@ import ratatosk.lib.utils.misc
 import ratatosk.lib.annotation.snpeff
 import ratatosk.lib.annotation.annovar
 import ngstestdata as ntd
+from nose.plugins.attrib import attr
+
+
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -61,6 +64,7 @@ def _luigi_args(args):
         return [local_scheduler] + args
     return args
 
+@attr('full')
 class TestSamtoolsWrappers(unittest.TestCase):
     def setUp(self):
         """Setup samtools wrappers by linking fastq files from ngs_test_data"""
@@ -79,6 +83,7 @@ class TestSamtoolsWrappers(unittest.TestCase):
             h2 = fp.readlines()[0:2]
             self.assertEqual(h2, ['@SQ\tSN:chr11\tLN:2000000\n', '@RG\tID:P001_101_index3_TGACCA_L001_R1_001\tSM:P001_101_index3_TGACCA_L001_R1_001\tPL:Illumina\n'])
             
+@attr('full')
 class TestMiscWrappers(unittest.TestCase):
     def setUp(self):
         """Setup misc wrappers by linking fastq files from ngs_test_data"""
@@ -146,6 +151,7 @@ class TestMiscWrappers(unittest.TestCase):
         os.unlink("mock.yaml")
         self.assertTrue(os.path.exists(sai1.replace(".sai", ".trimmed.sync.sai")))
 
+@attr('full')
 class TestBwaWrappers(unittest.TestCase):
     def setUp(self):
         """Setup bwa wrappers by linking fastq files from ngs_test_data"""
@@ -177,6 +183,7 @@ class TestBwaWrappers(unittest.TestCase):
         pos = [x.pos for x in fp if x.pos>0]
         self.assertListEqual(pos[0:10], sorted(pos[0:10]))
 
+@attr('full')
 class TestPicardWrappers(unittest.TestCase):
     def setUp(self):
         """Setup picard wrappers by linking fastq files from ngs_test_data"""
@@ -233,6 +240,7 @@ class TestPicardWrappers(unittest.TestCase):
 #
 # TODO: make single tests of functions that only require the mergebam
 # output. This should be in setUp
+@attr('full')
 class TestGATKWrappers(unittest.TestCase):
     @classmethod
     def setUpClass(self):
@@ -324,6 +332,7 @@ class TestGATKWrappers(unittest.TestCase):
 
 has_annovar = not (os.getenv("ANNOVAR_HOME") is None or os.getenv("ANNOVAR_HOME") == "")
 has_snpeff = not (os.getenv("SNPEFF_HOME") is None or os.getenv("SNPEFF_HOME") == "")
+@attr('full')
 class TestAnnotationWrapper(unittest.TestCase):
     @classmethod
     def setUpClass(self):
