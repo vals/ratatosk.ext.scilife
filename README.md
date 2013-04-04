@@ -13,6 +13,16 @@ Science for Life Laboratory Genomics Core facility in Stockholm.
 Install `ratatosk` by following the instructions at
 [ratatosk](https://github.com/percyfal/ratatosk).
 
+### Test data ###
+
+In order to run the full tests, install the test data set:
+
+	git clone https://github.com/percyfal/ngs.test.data
+	python setup.py develop
+	
+Note that you **must** use *setup.py develop*.
+
+
 ### Installation ###
 
 To install the development version of `ratatosk.ext.scilife`, do
