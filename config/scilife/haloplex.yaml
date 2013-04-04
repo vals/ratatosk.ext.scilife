@@ -1,4 +1,7 @@
 # Main configuration file for HaloPlex analysis
+settings:
+  target_generator_handler: ratatosk.ext.scilife.sample.target_generator
+  
 misc:
   ResyncMates:
     parent_task: ratatosk.lib.utils.cutadapt.CutadaptJobTask
@@ -56,6 +59,8 @@ gatk:
   BaseRecalibrator:
     parent_task: ratatosk.pipeline.haloplex.RawIndelRealigner
 
-pipeline:
-  HaloPlex:
-    target_generator_function: ratatosk.ext.scilife.sample.target_generator
+htslib:
+  InputVcfFile: ratatosk.lib.tools.gatk.VariantEval
+  vcfmerge:
+    target_generator_handler: ratatosk.ext.scilife.sample.collect_vcf_files
+    
