@@ -21,5 +21,7 @@ config_dict = {
     'AlignSeqcap' : {'config' : os.path.join(ratatosk.ext.scilife.__path__[0], os.pardir, os.pardir, os.pardir, "config", "scilife", "align_seqcap.yaml"),
                      'cls' : ratatosk.pipeline.align.AlignSeqcap},
     'HaloPlex' : {'config' : os.path.join(ratatosk.ext.scilife.__path__[0], os.pardir, os.pardir, os.pardir, "config", "scilife", "haloplex.yaml"),
-                  'cls' : ratatosk.pipeline.haloplex.HaloPlex}
+                  'cls' : ratatosk.pipeline.haloplex.HaloPlex},
+    'HaloPlexSummary' : {'config' : os.path.join(ratatosk.ext.scilife.__path__[0], os.pardir, os.pardir, os.pardir, "config", "scilife", "haloplex.yaml"),
+                         'cls' : ratatosk.pipeline.haloplex.HaloPlexSummary}
     }

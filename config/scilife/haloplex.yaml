@@ -60,7 +60,8 @@ gatk:
     parent_task: ratatosk.pipeline.haloplex.RawIndelRealigner
 
 htslib:
-  InputVcfFile: ratatosk.lib.tools.gatk.VariantEval
-  vcfmerge:
+  VcfMerge:
     target_generator_handler: ratatosk.ext.scilife.sample.collect_vcf_files
-    
+
+    # This is inconsistent - should be handled by label. Has to do with how sample.collect_vcf_files is defined
+    source_suffix: .trimmed.sync.sort.merge.realign.recal.clip.filtered.vcf.gz

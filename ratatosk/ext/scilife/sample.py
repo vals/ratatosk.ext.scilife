@@ -38,10 +38,9 @@ def collect_sample_runs(task):
 def collect_vcf_files(task, sample=None, flowcell=None, lane=None, **kwargs):
     logging.debug("Collecting vcf files for {}".format(task.target))
     sample_runs = target_generator(os.path.dirname(task.target))
-    vcf_list = [x[1] + task.source_suffix for x in sample_runs]
+    vcf_list = list(set([x[1] + task.source_suffix for x in sample_runs]))
     logging.debug("Generated target vcffile list {}".format(vcf_list))
     return vcf_list
-                                   
 
 def target_generator(indir, sample=None, flowcell=None, lane=None, **kwargs):
     """Make all desired target output names based on the final target
