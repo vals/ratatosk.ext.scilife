@@ -65,3 +65,7 @@ htslib:
 
     # This is inconsistent - should be handled by label. Has to do with how sample.collect_vcf_files is defined
     source_suffix: .trimmed.sync.sort.merge.realign.recal.clip.filtered.vcf.gz
+
+tabix:
+  Bgzip:
+    parent_task: ratatosk.lib.tools.gatk.VariantFiltration
