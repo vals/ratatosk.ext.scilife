@@ -43,10 +43,10 @@ gatk:
     parent_task: ratatosk.lib.tools.gatk.PrintReads
   UnifiedGenotyper:
     parent_task: ratatosk.lib.tools.gatk.ClipReads
-  VariantFiltration:
+  VariantHaloFiltration:
     parent_task: ratatosk.lib.tools.gatk.UnifiedGenotyper
   VariantEval:
-    parent_task: ratatosk.lib.tools.gatk.VariantFiltration
+    parent_task: ratatosk.pipeline.haloplex.VariantHaloFiltration
 
   # Addon tasks needed for HaloPlex
   RawUnifiedGenotyper:
@@ -69,3 +69,6 @@ htslib:
 tabix:
   Bgzip:
     parent_task: ratatosk.lib.tools.gatk.VariantFiltration
+
+fastqc:
+  parent_task: ratatosk.lib.align.bwa.InputFastqFile
