@@ -40,10 +40,14 @@ gatk:
     parent_task: ratatosk.lib.tools.gatk.CombineVariants
   VariantSnpRecalibrator:
     parent_task: ratatosk.lib.tools.gatk.SelectSnpVariants
+  VariantSnpRecalibratorExome:
+    parent_task: ratatosk.lib.tools.gatk.SelectSnpVariants
   VariantIndelRecalibrator:
     parent_task: ratatosk.lib.tools.gatk.SelectIndelVariants
-  VariantFiltration:
-    parent_task: ratatosk.lib.tools.gatk.UnifiedGenotyper
+  VariantSnpFiltrationExp:
+    parent_task: ratatosk.lib.tools.gatk.SelectSnpVariants
+  VariantIndelFiltrationExp:
+    parent_task: ratatosk.lib.tools.gatk.SelectIndelVariants
   VariantEval:
     parent_task: ratatosk.lib.tools.gatk.VariantFiltration
 
