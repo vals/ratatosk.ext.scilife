@@ -31,7 +31,8 @@ def collect_sample_runs(task):
     logging.debug("Collecting sample runs for {}".format(task.target))
     sample_runs = target_generator(os.path.dirname(os.path.dirname(task.target)), 
                                    sample=[os.path.basename(os.path.dirname(task.target))])
-    bam_list = [x[2] + os.path.basename(rreplace(task.target.replace(x[0], ""), "{}{}".format(task.label, task.target_suffix), task.source_suffix, 1)) for x in sample_runs]
+    src_suffix = task.parent()[0]().suffix
+    bam_list = [x[2] + os.path.basename(rreplace(task.target.replace(x[0], ""), "{}{}".format(task.label, task.suffix), src_suffix, 1)) for x in sample_runs]
     logging.debug("Generated target bamfile list {}".format(bam_list))
     return bam_list
 
