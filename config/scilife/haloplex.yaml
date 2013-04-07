@@ -71,4 +71,4 @@ tabix:
     parent_task: ratatosk.lib.tools.gatk.VariantFiltration
 
 fastqc:
-  parent_task: ratatosk.lib.align.bwa.InputFastqFile
+  parent_task: ratatosk.lib.utils.cutadapt.InputFastqFile
