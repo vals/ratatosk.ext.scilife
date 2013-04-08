@@ -39,7 +39,8 @@ def collect_sample_runs(task):
 def collect_vcf_files(task, sample=None, flowcell=None, lane=None, **kwargs):
     logging.debug("Collecting vcf files for {}".format(task.target))
     sample_runs = target_generator(os.path.dirname(task.target))
-    vcf_list = list(set([x[1] + task.source_suffix for x in sample_runs]))
+    parent_cls = task.parent()[0]
+    vcf_list = list(set([x[1] + task.adl() + parent_cls().sfx()  for x in sample_runs]))
     logging.debug("Generated target vcffile list {}".format(vcf_list))
     return vcf_list
 

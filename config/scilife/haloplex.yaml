@@ -75,17 +75,15 @@ gatk:
     parent_task: ratatosk.lib.tools.gatk.UnifiedGenotyper
   VariantEval:
     parent_task: ratatosk.pipeline.haloplex.VariantHaloFiltration
-  BaseRecalibrator:
-    parent_task: ratatosk.pipeline.haloplex.IndelRealigner
 
 htslib:
   VcfMerge:
     target_generator_handler: ratatosk.ext.scilife.sample.collect_vcf_files
-
-    # This is inconsistent - should be handled by label. Has to do with how sample.collect_vcf_files is defined
-    source_suffix: .trimmed.sync.sort.merge.realign.recal.clip.filtered.vcf.gz
-
+    # We need to add a label for parent task IndexedBgzip since
+    # VcfMerge output is somewhat generic
+    add_label:
+      - .trimmed.sync.sort.merge.realign.recal.clip.filtered
+    
 tabix:
   Bgzip:
     parent_task: ratatosk.lib.tools.gatk.VariantFiltration
-
