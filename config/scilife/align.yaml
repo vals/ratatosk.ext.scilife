@@ -22,7 +22,13 @@ picard:
 
 samtools:
   SamToBam:
-    parent_task: ratatosk.lib.align.bwa.BwaSampe
+    parent_task: ratatosk.lib.align.bwa.Sampe
+
+bwa:
+  Aln:
+    parent_task:
+      - ratatosk.lib.align.bwa.InputFastqFile
+      - ratatosk.lib.tools.fastqc.FastQCJobTask
 
 fastqc:
   parent_task: ratatosk.lib.align.bwa.InputFastqFile

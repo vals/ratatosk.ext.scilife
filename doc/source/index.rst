@@ -3,12 +3,19 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
+
 ratatosk.ext.scilife - a ratatosk extension
 ================================================
+
+.. warning:: ratatosk.ext.scilife is currently in pre-release status
+   and is under very active development. Use it at your own risk.
+
 
 `ratatosk.ext.scilife` is a `ratatosk` extension with custom
 configurations and functions for analysis of data generated at Science
 for Life Laboratory. 
+
+
 
 
 Documentation
