@@ -16,7 +16,16 @@ import os
 import ratatosk.ext.scilife
 # Define configuration file locations for predefined workflows
 config_dict = {
-    'ratatosk' : os.path.join(ratatosk.ext.scilife.__path__[0], os.pardir, os.pardir, os.pardir, "config", "scilife", "ratatosk.yaml"),
-    'seqcap' : os.path.join(ratatosk.ext.scilife.__path__[0], os.pardir, os.pardir, os.pardir, "config", "scilife", "align_seqcap.yaml"),
-    'haloplex' : os.path.join(ratatosk.ext.scilife.__path__[0], os.pardir, os.pardir, os.pardir, "config", "scilife", "haloplex.yaml"),
+    'ratatosk' : {'config':os.path.join(ratatosk.ext.scilife.__path__[0], os.pardir, os.pardir, os.pardir, "config", "scilife", "ratatosk.yaml"),
+                  'cls':None},
+    'Align' : {'config' : os.path.join(ratatosk.ext.scilife.__path__[0], os.pardir, os.pardir, os.pardir, "config", "scilife", "align.yaml"),
+                     'cls' : ratatosk.pipeline.align.Align},
+    'SeqCap' : {'config' : os.path.join(ratatosk.ext.scilife.__path__[0], os.pardir, os.pardir, os.pardir, "config", "scilife", "seqcap.yaml"),
+                     'cls' : ratatosk.pipeline.seqcap.SeqCap},
+    'SeqCapSummary' : {'config' : os.path.join(ratatosk.ext.scilife.__path__[0], os.pardir, os.pardir, os.pardir, "config", "scilife", "seqcap.yaml"),
+                     'cls' : ratatosk.pipeline.seqcap.SeqCapSummary},
+    'HaloPlex' : {'config' : os.path.join(ratatosk.ext.scilife.__path__[0], os.pardir, os.pardir, os.pardir, "config", "scilife", "haloplex.yaml"),
+                  'cls' : ratatosk.pipeline.haloplex.HaloPlex},
+    'HaloPlexSummary' : {'config' : os.path.join(ratatosk.ext.scilife.__path__[0], os.pardir, os.pardir, os.pardir, "config", "scilife", "haloplex.yaml"),
+                         'cls' : ratatosk.pipeline.haloplex.HaloPlexSummary}
     }

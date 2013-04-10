@@ -31,11 +31,18 @@ def collect_sample_runs(task):
     logging.debug("Collecting sample runs for {}".format(task.target))
     sample_runs = target_generator(os.path.dirname(os.path.dirname(task.target)), 
                                    sample=[os.path.basename(os.path.dirname(task.target))])
-    bam_list = [x[2] + os.path.basename(rreplace(task.target.replace(x[0], ""), "{}{}".format(task.label, task.target_suffix), task.source_suffix, 1)) for x in sample_runs]
-    # Hacky way to get at suffix of target
-    # bam_list = [x[2] + rreplace(task.target.split(os.path.basename(x[2]))[-1], "{}{}".format(task.label, task.target_suffix), task.source_suffix, 1) for x in sample_runs]
+    src_suffix = task.parent()[0]().suffix
+    bam_list = [x[2] + os.path.basename(rreplace(task.target.replace(x[0], ""), "{}{}".format(task.label, task.suffix), src_suffix, 1)) for x in sample_runs]
     logging.debug("Generated target bamfile list {}".format(bam_list))
     return bam_list
+
+def collect_vcf_files(task, sample=None, flowcell=None, lane=None, **kwargs):
+    logging.debug("Collecting vcf files for {}".format(task.target))
+    sample_runs = target_generator(os.path.dirname(task.target))
+    parent_cls = task.parent()[0]
+    vcf_list = list(set([x[1] + task.adl() + parent_cls().sfx()  for x in sample_runs]))
+    logging.debug("Generated target vcffile list {}".format(vcf_list))
+    return vcf_list
 
 def target_generator(indir, sample=None, flowcell=None, lane=None, **kwargs):
     """Make all desired target output names based on the final target

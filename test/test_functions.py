@@ -16,16 +16,6 @@ import shutil
 import unittest
 import logging
 from ratatosk.ext.scilife.sample import *
-import ngstestdata as ntd
-
-ngsloadmsg = "No ngstestdata module; skipping test. Do a 'git clone https://github.com/percyfal/ngs.test.data' followed by 'python setup.py develop'"
-has_data = False
-try:
-    import ngstestdata as ntd
-    has_data = True
-except:
-    logging.warn(ngsloadmsg)
-    time.sleep(1)
 
 class Task(object):
     def __init__(self, target, label, source_suffix, target_suffix):
@@ -51,10 +41,9 @@ class Task(object):
         return self._source_suffix
         
 
-@unittest.skipIf(not has_data, ngsloadmsg)
 class TestFunctions(unittest.TestCase):
     def setUp(self):
-        self.project = os.path.relpath(os.path.join(ntd.__path__[0], os.pardir, "data", "projects", "J.Doe_00_01"))
+        self.project = os.path.join("projects", "J.Doe_00_01")
         self.sample = 'P001_101_index3'
         self.flowcell = '120924_AC003CCCXX'
 
@@ -65,13 +54,13 @@ class TestFunctions(unittest.TestCase):
     def test_tg_all(self):
         """Test getting all sample runs from a project"""
         tl = target_generator(indir=self.project)
-        self.assertEqual(sorted([x[0] for x in tl]), ['P001_101_index3', 'P001_101_index3', 'P001_102_index6'])
+        self.assertEqual(sorted([x[0] for x in tl]), ['P001_101_index3', 'P001_101_index3', 'P001_101_index3', 'P001_102_index6', 'P001_102_index6'])
         self.assertEqual(list(set([x[0] for x in tl])), ['P001_101_index3', 'P001_102_index6'])
 
     def test_tg_subset_sample(self):
         """Test getting a subset of samples"""
         tl = target_generator(indir=self.project, sample=[self.sample])
-        self.assertEqual(sorted([x[0] for x in tl]), ['P001_101_index3', 'P001_101_index3'])
+        self.assertEqual(sorted([x[0] for x in tl]), ['P001_101_index3', 'P001_101_index3', 'P001_101_index3'])
 
     def test_tg_subset_flowcell(self):
         """Test getting samples subsetted by flowcell"""
@@ -81,8 +70,8 @@ class TestFunctions(unittest.TestCase):
     def test_tg_subset_sample_flowcell(self):
         """Test getting samples subsetted by flowcell and sample"""
         tl = target_generator(indir=self.project, flowcell=[self.flowcell], sample=[self.sample])
-        self.assertEqual(sorted([os.path.basename(os.path.dirname(x[2])) for x in tl]), ['120924_AC003CCCXX'])
-        self.assertEqual(sorted([os.path.basename(x[0]) for x in tl]), ['P001_101_index3'])
+        self.assertEqual(sorted([os.path.basename(os.path.dirname(x[2])) for x in tl]), ['120924_AC003CCCXX', '120924_AC003CCCXX'])
+        self.assertEqual(sorted([os.path.basename(x[0]) for x in tl]), ['P001_101_index3', 'P001_101_index3'])
 
     def test_collect_sample_runs(self):
         """Test function that collects sample runs"""
