@@ -1,7 +1,7 @@
 settings:
   target_generator_handler: ratatosk.ext.scilife.sample.target_generator
 
-picard:
+ratatosk.lib.tools.picard:
   SortSam:
     #parent_task: ratatosk.lib.align.bwa.Bampe
     parent_task: ratatosk.lib.align.bwa.Sampe
@@ -20,7 +20,7 @@ picard:
   InsertMetrics:
     parent_task: ratatosk.lib.tools.picard.DuplicationMetrics
 
-gatk:
+ratatosk.lib.tools.gatk:
   RealignerTargetCreator:
     parent_task: ratatosk.lib.tools.picard.DuplicationMetrics
   IndelRealigner:
@@ -81,17 +81,18 @@ gatk:
       - -effects
       - 
 
-bwa:
+ratatosk.lib.align.bwa:
   Aln:
     parent_task: 
       - ratatosk.lib.align.bwa.InputFastqFile
-      - ratatosk.lib.tools.fastqc.FastQCJobTask
+      - ratatosk.lib.tools.fastqc.FastQC
 
-fastqc:
-  parent_task:
-    - ratatosk.lib.align.bwa.InputFastqFile
+ratatosk.lib.tools.fastqc:
+  FastQC:
+    parent_task:
+      - ratatosk.lib.align.bwa.InputFastqFile
 
-snpeff:
+ratatosk.lib.annotation.snpeff:
   snpEff:
     parent_task:
       - ratatosk.lib.tools.gatk.ReadBackedPhasing

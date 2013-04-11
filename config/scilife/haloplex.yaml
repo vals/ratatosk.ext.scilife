@@ -5,20 +5,21 @@ settings:
 ratatosk.lib.utils.misc:
   ResyncMates:
     parent_task: 
-      - ratatosk.lib.utils.cutadapt.CutadaptJobTask
-      - ratatosk.lib.utils.cutadapt.CutadaptJobTask
+      - ratatosk.lib.utils.cutadapt.Cutadapt
+      - ratatosk.lib.utils.cutadapt.Cutadapt
 ratatosk.lib.utils.cutadapt:
   Cutadapt:
     parent_task:
       - ratatosk.lib.utils.cutadapt.InputFastqFile
-      - ratatosk.lib.tools.fastqc.FastQCJobTask
+      - ratatosk.lib.tools.fastqc.FastQC
 
 ratatosk.lib.tools.fastqc:
-  parent_task: ratatosk.lib.utils.cutadapt.InputFastqFile
+  FastQC:
+    parent_task: ratatosk.lib.utils.cutadapt.InputFastqFile
 
 ratatosk.lib.align.bwa:
   Aln:
-    parent_task: ratatosk.lib.utils.misc.ResyncMatesJobTask
+    parent_task: ratatosk.lib.utils.misc.ResyncMates
   Sampe:
     label: .trimmed.sync
     add_label:
@@ -71,10 +72,12 @@ ratatosk.lib.tools.gatk:
     parent_task: ratatosk.lib.tools.gatk.PrintReads
   UnifiedGenotyper:
     parent_task: ratatosk.lib.tools.gatk.ClipReads
-  VariantHaloFiltration:
-    parent_task: ratatosk.lib.tools.gatk.UnifiedGenotyper
   VariantEval:
     parent_task: ratatosk.pipeline.haloplex.VariantHaloFiltration
+
+ratatosk.pipeline.haloplex:
+  VariantHaloFiltration:
+    parent_task: ratatosk.lib.tools.gatk.UnifiedGenotyper
 
 ratatosk.lib.variation.htslib:
   VcfMerge:
