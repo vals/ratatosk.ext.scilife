@@ -11,37 +11,6 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations under
 # the License.
-"""
-
-.. warning:: this is still very experimental and will most likely change soon
-
-The sample module contains functions that are registered to
-backend.__handlers__ and task.__handlers__ as target generator
-handlers. They are simply functions that collect name prefixes
-assuming the directory structure used at Science for Life Laboratory:
-
-.. code-block:: text
-
-   J.Doe_00_01
-   |-- P001_101_index3
-   |   |-- 120924_AC003CCCXX
-   |   |   |-- P001_101_index3_TGACCA_L001_R1_001.fastq.gz
-   |   |   |-- P001_101_index3_TGACCA_L001_R2_001.fastq.gz
-   |   |   `-- SampleSheet.csv
-   |   |-- 121015_BB002BBBXX
-   |   |   |-- P001_101_index3_TGACCA_L001_R1_001.fastq.gz
-   |   |   |-- P001_101_index3_TGACCA_L001_R2_001.fastq.gz
-   |   |   `-- SampleSheet.csv
-   |-- P001_102_index6
-   |   `-- 120924_AC003CCCXX
-   |       |-- P001_102_index6_ACAGTG_L002_R1_001.fastq.gz
-   |       |-- P001_102_index6_ACAGTG_L002_R2_001.fastq.gz
-   |       `-- SampleSheet.csv
-
-Classes
--------
-
-"""
 import os
 import glob
 import csv
@@ -56,10 +25,6 @@ def collect_sample_runs(task):
     MergeSamFiles it should return a list of targets.
 
     :param task: current task
-    :param sample: list of sample names to include
-    :param flowcell: list of flowcells to include
-    :param lane: list of lanes to include
-
 
     :return: list of bam files for each sample run in a flowcell directory
     """
@@ -72,16 +37,6 @@ def collect_sample_runs(task):
     return bam_list
 
 def collect_vcf_files(task, sample=None, flowcell=None, lane=None, **kwargs):
-    """Collect final vcf files at the sample level. 
-
-    :param task: current task
-    :param sample: list of sample names to include
-    :param flowcell: list of flowcells to include
-    :param lane: list of lanes to include
-
-    :return: list of vcf files for every sample in a project directory
-    """
-
     logging.debug("Collecting vcf files for {}".format(task.target))
     sample_runs = target_generator(os.path.dirname(task.target))
     parent_cls = task.parent()[0]
@@ -90,21 +45,15 @@ def collect_vcf_files(task, sample=None, flowcell=None, lane=None, **kwargs):
     return vcf_list
 
 def target_generator(indir, sample=None, flowcell=None, lane=None, **kwargs):
-    """
-    Return prefixes that are used to make all desired target output
-    names.
-    
+    """Make all desired target output names based on the final target
+    suffix. 
+
     :param indir: input directory
     :param sample: list of sample names to include
     :param flowcell: list of flowcells to include
     :param lane: list of lanes to include
 
-    :return: list of tuples consisting of sample, sample target prefix
-      (merge target), sample run prefix (read pair prefix). In the
-      example above, one tuple would be (P001_101_index3,
-      indir/P001_101_index3,
-      indir/P001_101_index3/120924_AC003CCCXX/P001_101_index3_TGACCA_L001)
-
+    :return: list of tuples consisting of sample, sample target prefix (merge target), sample run prefix (read pair prefix)
     """
     targets = []
     if not os.path.exists(indir):
@@ -125,20 +74,51 @@ def target_generator(indir, sample=None, flowcell=None, lane=None, **kwargs):
             fc_dir = os.path.join(sampledir, fc)
             # Yes folks, we also need to know the barcode and the lane...
             # Parse the flowcell config
-            if os.path.exists(os.path.join(fc_dir, "SampleSheet.csv")):
-                fh = file(os.path.join(fc_dir, "SampleSheet.csv"))
-                ssheet = csv.DictReader([x for x in fh if x[0] != "#"])
-            else:
-                logging.warn("No sample sheet for sample '{}' in flowcell '{}';  trying bcbio format".format(s, fc))
-                runinfo = glob.glob(os.path.join(fc_dir, "{}*-bcbb-config.yaml".format(s)))
-                if not os.path.exists(runinfo[0]):
-                    logging.warn("No sample information for sample '{}' in flowcell '{}';  skipping".format(s, fc))
-                    continue
-                else:
-                    ssheet = bcbio_config_to_sample_sheet(runinfo[0])
+            # if os.path.exists(os.path.join(fc_dir, "SampleSheet.csv")):
+            #     fh = file(os.path.join(fc_dir, "SampleSheet.csv"))
+            #     ssheet = csv.DictReader([x for x in fh if x[0] != "#"])
+            # else:
+            #     logging.warn("No sample sheet for sample '{}' in flowcell '{}';  trying bcbio format".format(s, fc))
+            #     runinfo = glob.glob(os.path.join(fc_dir, "{}*-bcbb-config.yaml".format(s)))
+            #     if not os.path.exists(runinfo[0]):
+            #         logging.warn("No sample information for sample '{}' in flowcell '{}';  skipping".format(s, fc))
+            #         continue
+            #     else:
+            #         ssheet = bcbio_config_to_sample_sheet(runinfo[0])
+            ssheet = read_sample_sheet(fc_dir, s, fc)
+            if not ssheet:
+                continue
             for line in ssheet:
                 logging.info("Adding sample '{0}' from flowcell '{1}' (barcode '{2}') to analysis".format(s, fc, line['Index']))
                 targets.append((s, os.path.join(sampledir, s), 
                                 os.path.join(fc_dir, "{}_{}_L00{}".format(s, line['Index'], line['Lane'] ))))
     return targets
 
+
+def read_sample_sheet(fc_dir, sample=None, flowcell=None, ssheetname="SampleSheet.csv", runinfo_glob="*-bcbb-config.yaml"):
+    """Read sample sheet if exists and return list of samples. Tries
+    first Illumina SampleSheet style, then bcbio runinfo
+    configuration.
+    :param fc_dir: flowcell directory
+    :param sample: sample name
+    :param flowcell: flowcell name
+    :param ssheetname: sample sheet name
+    :param runinfo_glob: bcbio config glob name
+
+    :returns: list of samples, or None
+    """
+    if os.path.exists(os.path.join(fc_dir, ssheetname)):
+        fh = file(os.path.join(fc_dir, ssheetname))
+        ssheet = csv.DictReader([x for x in fh if x[0] != "#"])
+    else:
+        logging.warn("No sample sheet for sample '{}' in flowcell '{}';  trying bcbio format".format(sample, flowcell))
+        runinfo = glob.glob(os.path.join(fc_dir, "{}*-bcbb-config.yaml".format(sample)))
+        if not runinfo:
+            logging.warn("No sample information for sample '{}' in flowcell '{}';  skipping".format(sample, flowcell))
+            return None
+        if not os.path.exists(runinfo[0]):
+            logging.warn("No sample information for sample '{}' in flowcell '{}';  skipping".format(sample, flowcell))
+            return None
+        else:
+            ssheet = bcbio_config_to_sample_sheet(runinfo[0])
+    return ssheet
