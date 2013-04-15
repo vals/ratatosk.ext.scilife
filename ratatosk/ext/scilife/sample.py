@@ -74,20 +74,51 @@ def target_generator(indir, sample=None, flowcell=None, lane=None, **kwargs):
             fc_dir = os.path.join(sampledir, fc)
             # Yes folks, we also need to know the barcode and the lane...
             # Parse the flowcell config
-            if os.path.exists(os.path.join(fc_dir, "SampleSheet.csv")):
-                fh = file(os.path.join(fc_dir, "SampleSheet.csv"))
-                ssheet = csv.DictReader([x for x in fh if x[0] != "#"])
-            else:
-                logging.warn("No sample sheet for sample '{}' in flowcell '{}';  trying bcbio format".format(s, fc))
-                runinfo = glob.glob(os.path.join(fc_dir, "{}*-bcbb-config.yaml".format(s)))
-                if not os.path.exists(runinfo[0]):
-                    logging.warn("No sample information for sample '{}' in flowcell '{}';  skipping".format(s, fc))
-                    continue
-                else:
-                    ssheet = bcbio_config_to_sample_sheet(runinfo[0])
+            # if os.path.exists(os.path.join(fc_dir, "SampleSheet.csv")):
+            #     fh = file(os.path.join(fc_dir, "SampleSheet.csv"))
+            #     ssheet = csv.DictReader([x for x in fh if x[0] != "#"])
+            # else:
+            #     logging.warn("No sample sheet for sample '{}' in flowcell '{}';  trying bcbio format".format(s, fc))
+            #     runinfo = glob.glob(os.path.join(fc_dir, "{}*-bcbb-config.yaml".format(s)))
+            #     if not os.path.exists(runinfo[0]):
+            #         logging.warn("No sample information for sample '{}' in flowcell '{}';  skipping".format(s, fc))
+            #         continue
+            #     else:
+            #         ssheet = bcbio_config_to_sample_sheet(runinfo[0])
+            ssheet = read_sample_sheet(fc_dir, s, fc)
+            if not ssheet:
+                continue
             for line in ssheet:
                 logging.info("Adding sample '{0}' from flowcell '{1}' (barcode '{2}') to analysis".format(s, fc, line['Index']))
                 targets.append((s, os.path.join(sampledir, s), 
                                 os.path.join(fc_dir, "{}_{}_L00{}".format(s, line['Index'], line['Lane'] ))))
     return targets
 
+
+def read_sample_sheet(fc_dir, sample=None, flowcell=None, ssheetname="SampleSheet.csv", runinfo_glob="*-bcbb-config.yaml"):
+    """Read sample sheet if exists and return list of samples. Tries
+    first Illumina SampleSheet style, then bcbio runinfo
+    configuration.
+    :param fc_dir: flowcell directory
+    :param sample: sample name
+    :param flowcell: flowcell name
+    :param ssheetname: sample sheet name
+    :param runinfo_glob: bcbio config glob name
+
+    :returns: list of samples, or None
+    """
+    if os.path.exists(os.path.join(fc_dir, ssheetname)):
+        fh = file(os.path.join(fc_dir, ssheetname))
+        ssheet = csv.DictReader([x for x in fh if x[0] != "#"])
+    else:
+        logging.warn("No sample sheet for sample '{}' in flowcell '{}';  trying bcbio format".format(sample, flowcell))
+        runinfo = glob.glob(os.path.join(fc_dir, "{}*-bcbb-config.yaml".format(sample)))
+        if not runinfo:
+            logging.warn("No sample information for sample '{}' in flowcell '{}';  skipping".format(sample, flowcell))
+            return None
+        if not os.path.exists(runinfo[0]):
+            logging.warn("No sample information for sample '{}' in flowcell '{}';  skipping".format(sample, flowcell))
+            return None
+        else:
+            ssheet = bcbio_config_to_sample_sheet(runinfo[0])
+    return ssheet
