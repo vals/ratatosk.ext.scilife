@@ -29,6 +29,7 @@ from ratatosk.pipeline.haloplex import HaloPlex, HaloPlexSummary
 from ratatosk.pipeline.seqcap import SeqCap, SeqCapSummary
 from ratatosk.pipeline.align import Align, AlignSummary
 from ratatosk.ext.scilife.config import config_dict
+from ratatosk.ext.scilife.conversion import *
 
 if __name__ == "__main__":
     task_cls = None

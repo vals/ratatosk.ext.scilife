@@ -38,3 +38,6 @@ class Xls2Ped(Xls2PedJobTask):
     sub_executable = luigi.Parameter(default="xls2ped.py")
     parent_task = luigi.Parameter(default="ratatosk.ext.scilife.conversion.InputXlsFile")
     suffix = luigi.Parameter(default="_ped.txt")
+
+    def args(self):
+        return [self.input()[0], self.output()]
