@@ -116,23 +116,11 @@ The downside of this is of course that tasks requiring all samples to
 be processed must be submitted separately once the previous tasks are
 done.
 
-## Examples with *ratatosk_run_scilife.py* ##
-
-These examples are based on the test data set
-[ngs.test.data](https://github.com/percyfal/ngs.test.data).
-
-## Best practice pipelines ##
-
-### Alignment pipeline ###
-
-### Sequence capture ###
-
-### HaloPlex ###
-
-### Variant summarisation and annotation ###
-
-### RNA-Seq ###
 
 
 
+More information
+================
 
+ * Documentation: https://ratatosk.readthedocs.org/projects/ratatoskextscilife/en/latest
+ * Code: https://github.com/percyfal/ratatosk.ext.scilife
