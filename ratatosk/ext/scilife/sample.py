@@ -150,6 +150,7 @@ def read_sample_sheet(fc_dir, sample=None, flowcell=None, ssheetname="SampleShee
     """Read sample sheet if exists and return list of samples. Tries
     first Illumina SampleSheet style, then bcbio runinfo
     configuration.
+
     :param fc_dir: flowcell directory
     :param sample: sample name
     :param flowcell: flowcell name
