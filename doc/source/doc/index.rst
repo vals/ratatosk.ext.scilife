@@ -5,4 +5,5 @@ ratatosk.ext.scilife documentation
    :maxdepth: 20 
 
    installation
+   scripts
    tutorial

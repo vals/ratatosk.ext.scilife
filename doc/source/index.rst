@@ -12,7 +12,7 @@ ratatosk.ext.scilife - a ratatosk extension
    and is under very active development. Use it at your own risk.
 
 
-`ratatosk.ext.scilife` is a `ratatosk` extension with custom
+:mod:`ratatosk.ext.scilife` is a :mod:`ratatosk` extension with custom
 configurations and functions for analysis of data generated at Science
 for Life Laboratory. 
 
