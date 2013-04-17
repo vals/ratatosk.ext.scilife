@@ -36,18 +36,30 @@ if __name__ == "__main__":
     opt_dict = {}
     if len(sys.argv) > 1:
         task = sys.argv[1]
-        opt_dict = opt_to_dict(sys.argv[1:])
+        task_args = sys.argv[2:]
         if task in config_dict.keys():
-            opt_dict['--config-file'] = config_dict[task]['config']
+            # Reset config-file if present
+            if "--config-file" in task_args:
+                i = task_args.index("--config-file")
+                task_args[i+1] = config_dict[task]['config']
+            else:
+                task_args.append("--config-file")
+                task_args.append(config_dict[task]['config'])
             task_cls = config_dict[task]['cls']
     else:
         task = None
 
-    setup_config(config_file=opt_dict.get("--config-file"), custom_config_file=opt_dict.get("--custom-config"))
+    config_file = None
+    custom_config_file = None
+    if "--config-file" in task_args:
+        config_file = task_args[task_args.index("--config-file") + 1]
+    if "--custom-config" in task_args:
+        custom_config_file = task_args[task_args.index("--custom-config") + 1]
+
+    setup_config(config_file=config_file, custom_config_file=custom_config_file)
     setup_global_handlers()
 
     if task_cls:
-        task_args = dict_to_opt(opt_dict)
         luigi.run(task_args, main_task_cls=task_cls)
     # Whatever other task/config the user wants to run
     else:
