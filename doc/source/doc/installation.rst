@@ -14,38 +14,20 @@ test data set is necessary for testing and running the pipelines.
 Installation
 ------------
 
+You can download and install :mod:`ratatosk.ext.scilife` from the
+`Python Package Index
+<https://pypi.python.org/pypi/ratatosk.ext.scilife>`_ with the command
+
+.. code-block:: text
+
+   pip install ratatosk.ext.scilife
+
 To install the development version of :mod:`ratatosk.ext.scilife`, do
 
 .. code-block:: text
 	
 	git clone https://github.com/percyfal/ratatosk.ext.scilife
 	python setup.py develop
-
-Installation in UPPMAX
-----------------------
-
-pygraphviz
-^^^^^^^^^^
-
-Installing `Pygraphviz <http://networkx.lanl.gov/pygraphviz/>`_ with
-``pip install pygraphviz`` often fails because the installer cannot
-find the :program:`graphviz` library. One solution lies in modifying the
-``setup.py`` that comes with the :mod:`pygrahviz` package. After a failed pip
-install in virtual environment ``virtualenv`` (or whatever you called
-it), you will typically find the failed build in
-``~/.virtualenvs/virtualenv/build/pygraphviz``. In that directory,
-modify the following section in  ``setup.py``:
-
-.. code-block:: text
-
-   # If the setup script couldn't find your graphviz installation you can
-   # specify it here by uncommenting these lines or providing your own:
-   # You must set both 'library_path' and 'include_path'
-
-   # Linux, generic UNIX
-   library_path='/usr/lib64/graphviz'
-   include_path='/usr/include/graphviz'
-
 
 Running the tests
 -----------------
