@@ -19,7 +19,6 @@ import sys
 from ratatosk import backend
 from ratatosk.config import setup_config
 from ratatosk.handler import setup_global_handlers
-from ratatosk.utils import opt_to_dict, dict_to_opt
 import ratatosk.lib.align.bwa
 import ratatosk.lib.tools.gatk
 import ratatosk.lib.tools.samtools
@@ -33,7 +32,6 @@ from ratatosk.ext.scilife.config import config_dict
 
 if __name__ == "__main__":
     task_cls = None
-    opt_dict = {}
     if len(sys.argv) > 1:
         task = sys.argv[1]
         task_args = sys.argv[2:]
