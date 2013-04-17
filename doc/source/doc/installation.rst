@@ -14,7 +14,7 @@ test data set is necessary for testing and running the pipelines.
 Installation
 ------------
 
-To install the development version of `ratatosk.ext.scilife`, do
+To install the development version of :mod:`ratatosk.ext.scilife`, do
 
 .. code-block:: text
 	
@@ -46,11 +46,6 @@ modify the following section in  ``setup.py``:
    library_path='/usr/lib64/graphviz'
    include_path='/usr/include/graphviz'
 
-Known installation issues
--------------------------
-
- - 
-
 
 Running the tests
 -----------------
@@ -60,6 +55,9 @@ Cd to the luigi test directory (``tests``) and run
 .. code-block:: text
 
 	nosetests -v -s 
+
+.. note:: Currently (20130417) many tests are failing but will be
+   fixed shortly
 	
 
 Running example pipelines
@@ -73,7 +71,7 @@ contains an example configuration file for project ``J.Doe_00_01``
 that is used in the following examples.
 
 .. note:: For the time being, you need to modify the paths to point to your ngs
-   test data installation directory.
+   test data installation directory in the configuration file
 
 .. note:: If a pipeline fails, make sure you have set the necessary
    environment variables ``GATK_HOME``, ``PICARD_HOME``, and
@@ -104,3 +102,13 @@ Finally, to run the HaloPlex pipeline and run the summary, run
    ratatosk_run_scilife.py HaloPlexSummary --indir /path/to/ngs.test.data/data/projects/J.Doe_00_01
      --outdir output_directory --custom-config examples/J.Doe_00_01 --workers 4
 
+Testing issues
+^^^^^^^^^^^^^^
+
+ - During pipeline execution, a :program:`picard` tool
+   (:program:`CreateSequenceDictionary`) is used to convert the
+   reference
+   ``/path/to/ngs.test.data/data/genomes/Hsapiens/hg19/seq/chr11.fa``
+   to a dictionary file (``chr11.dict``). For some reason, this
+   currently fails. Therefore you may need to run the command
+   manually.

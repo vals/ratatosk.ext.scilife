@@ -8,7 +8,7 @@
 ratatosk.ext.scilife - a ratatosk extension
 ================================================
 
-.. warning:: ratatosk.ext.scilife is currently in pre-release status
+.. warning:: :mod:`ratatosk.ext.scilife` is currently in pre-release status
    and is under very active development. Use it at your own risk.
 
 
