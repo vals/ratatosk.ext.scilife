@@ -33,7 +33,7 @@ def collect_sample_runs(task):
     sample_runs = target_generator(os.path.dirname(os.path.dirname(task.target)), 
                                    sample=[os.path.basename(os.path.dirname(task.target))])
     src_suffix = task.parent()[0]().suffix
-    bam_list = [x[2] + os.path.basename(rreplace(task.target.replace(x[0], ""), "{}{}".format(task.label, task.suffix), src_suffix, 1)) for x in sample_runs]
+    bam_list = list(set([x[2] + os.path.basename(rreplace(task.target.replace(x[0], ""), "{}{}".format(task.label, task.suffix), src_suffix, 1)) for x in sample_runs]))
     logging.debug("Generated target bamfile list {}".format(bam_list))
     return bam_list
 
@@ -49,7 +49,7 @@ def generic_collect_sample_runs(task):
     sample_runs = generic_target_generator(os.path.dirname(os.path.dirname(task.target)), 
                                            sample=[os.path.basename(os.path.dirname(task.target))])
     src_suffix = task.parent()[0]().suffix
-    bam_list = [x[2] + os.path.basename(rreplace(task.target.replace(x[0], ""), "{}{}".format(task.label, task.suffix), src_suffix, 1)) for x in sample_runs]
+    bam_list = list(set([x[2] + os.path.basename(rreplace(task.target.replace(x[0], ""), "{}{}".format(task.label, task.suffix), src_suffix, 1)) for x in sample_runs]))
     logging.debug("Generated target bamfile list {}".format(bam_list))
     return bam_list
 
@@ -103,7 +103,7 @@ def generic_target_generator(indir, sample=None, flowcell=None, lane=None, **kwa
                     logging.warn("File {} does not comply with format (.*)_[0-9]+(.fastq$|.fastq.gz$|.fq$|.fq.gz$); skipping".format(fq))
                     continue
                 targets.append((s, os.path.join(sampledir, s), 
-                                os.path.join(fc_dir, os.path.basename(m.group(1)))))
+                                os.path.join(fc_dir, os.path.basename(m.group(1).rstrip("R[12]").rstrip("_")))))
     return targets
     
 
@@ -118,7 +118,6 @@ def target_generator(indir, sample=None, flowcell=None, lane=None, **kwargs):
 
     :return: list of tuples consisting of sample, sample target prefix (merge target), sample run prefix (read pair prefix)
     """
-    print "In target_generator"
     targets = []
     if not os.path.exists(indir):
         logging.warn("No such input directory '{}'".format(indir))

@@ -21,6 +21,8 @@ import argparse
 import itertools
 import logging
 import copy
+import yaml
+from ratatosk.handler import RatatoskHandler, _load
 from ratatosk.ext.scilife.sample import target_generator
 from ratatosk.utils import make_fastq_links, opt_to_dict
 
@@ -232,14 +234,14 @@ if __name__ == "__main__":
     # Sample parser group
     sample_group = parser.add_argument_group("Sample options")
     sample_group.add_argument('-O', '--outdir', type=str, default=None, help='Output directory. Defaults to input directory, (i.e. runs analysis in input directory). Setting this will create symlinks for all requested files in input directory, mirroring the input directory structure.')
-    sample_group.add_argument('--sample', type=str, default=None, nargs="*",
+    sample_group.add_argument('--sample', type=str, default=None, action="append",
                               help='samples to process')
     sample_group.add_argument('--sample_file', type=str, default=None,
                               help='file containing samples to process, one per line')
     sample_group.add_argument('--lane', type=int, choices=xrange(1,9), default=None,
-                              help='lanes to process', nargs="*")
-    sample_group.add_argument('--flowcell', type=str, default=None, nargs="*",
-                              help='flowcells to process')
+                              help='lanes to process',  action="append")
+    sample_group.add_argument('--flowcell', type=str, default=None, 
+                              help='flowcells to process', action="append")
     sample_group.add_argument('-B', '--batch_size', type=int, default=4,
                               help='number of samples to process per node')
     sample_group.add_argument('-1', '--sample-target-suffix', type=str, default=None,
@@ -269,11 +271,31 @@ if __name__ == "__main__":
     # Parse arguments
     pargs = parser.parse_args()
 
+    # If we have a config file, read it and see if we have a
+    # target_generator_handler in settings
+    tgt_gen_fun = target_generator
+    if pargs.config_file:
+        with open(pargs.config_file) as fh:
+            config = yaml.load(fh)
+        if config and config.get("settings", {}).get("target_generator_handler", None):
+            h = RatatoskHandler(label="target_generator_handler", mod=config.get("settings", {}).get("target_generator_handler"))
+            hdl = _load(h)
+            if hdl:
+                tgt_gen_fun = hdl
+    if pargs.custom_config:
+        with open(pargs.custom_config) as fh:
+            config = yaml.load(fh)
+        if config and config.get("settings", {}).get("target_generator_handler", None):
+            h = RatatoskHandler(label="target_generator_handler", mod=config.get("settings", {}).get("target_generator_handler"))
+            hdl = _load(h)
+            if hdl:
+                tgt_gen_fun = hdl
+
     # Collect information about what samples to run, and on how many
     # nodes. This is somewhat convoluted since ratatosk_run_scilife
     # also collects sample information, but this step is necessary as
     # we need to wrap ratatosk_run_scilife.py in drmaa
-    targets = target_generator(indir=pargs.indir, sample=pargs.sample,
+    targets = tgt_gen_fun(indir=pargs.indir, sample=pargs.sample,
                                flowcell=pargs.flowcell, lane=pargs.lane)
     # After getting run list, if output directory is different to
     # input directory, link raw data files to output directory and
