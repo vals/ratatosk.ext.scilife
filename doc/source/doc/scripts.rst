@@ -86,9 +86,98 @@ cluster using the :mod:`drmaa` module, an implementation of the
 `Distributed Resource Management Application API
 <http://en.wikipedia.org/wiki/DRMAA>`_ specification. It is basically
 a wrapper for :program:`ratatosk_run_scilife.py`, adding options for
-drmaa.
+drmaa. The output from :program:`ratatosk_submit_job.py -h` is 
 
 .. code-block:: text
+
+   usage: ratatosk_submit_job.py [-h] [-n] -A ACCOUNT [-p {node,core,devel}]
+				 [-t TIME] [-J JOBNAME] [-D WORKINGDIRECTORY]
+				 [-o OUTPUTPATH] [-e ERRORPATH] [--email EMAIL]
+				 [--extra EXTRA] [-O OUTDIR]
+				 [--sample [SAMPLE [SAMPLE ...]]]
+				 [--sample_file SAMPLE_FILE]
+				 [--lane [{1,2,3,4,5,6,7,8} [{1,2,3,4,5,6,7,8} ...]]]
+				 [--flowcell [FLOWCELL [FLOWCELL ...]]]
+				 [-B BATCH_SIZE] [-1 SAMPLE_TARGET_SUFFIX]
+				 [-2 RUN_TARGET_SUFFIX]
+				 [--config-file CONFIG_FILE]
+				 [--custom-config CUSTOM_CONFIG]
+				 [--workers WORKERS]
+				 [--scheduler-host SCHEDULER_HOST]
+				 task indir
+
+   ratatosk submit job arguments.
+
+   optional arguments:
+     -h, --help            show this help message and exit
+
+   Common options:
+     -n, --dry_run         do a dry run (prints commands without actually running
+			   anything) (default: False)
+
+   Drmaa options:
+     -A ACCOUNT, --account ACCOUNT
+			   UPPMAX project account id (default: None)
+     -p {node,core,devel}, --partition {node,core,devel}
+			   partition type. (default: node)
+     -t TIME, --time TIME  run time (default: 10:00:00)
+     -J JOBNAME, --jobname JOBNAME
+			   job name (default: ratatosk)
+     -D WORKINGDIRECTORY, --workingDirectory WORKINGDIRECTORY
+			   working directory (default: .)
+     -o OUTPUTPATH, --outputPath OUTPUTPATH
+			   output path for stdout (default: .)
+     -e ERRORPATH, --errorPath ERRORPATH
+			   output path for stderr (default: .)
+     --email EMAIL         email address to send job information to (default:
+			   None)
+     --extra EXTRA         Extra specification args to submit via drmaa, provided
+			   as string (e.g. "--ntasks 4 --nodes 2 -C fat" for
+			   running 4 tasks on 2 nodes on fat partitions)
+			   (default: [])
+
+   Sample options:
+     -O OUTDIR, --outdir OUTDIR
+			   Output directory. Defaults to input directory, (i.e.
+			   runs analysis in input directory). Setting this will
+			   create symlinks for all requested files in input
+			   directory, mirroring the input directory structure.
+			   (default: None)
+     --sample [SAMPLE [SAMPLE ...]]
+			   samples to process (default: None)
+     --sample_file SAMPLE_FILE
+			   file containing samples to process, one per line
+			   (default: None)
+     --lane [{1,2,3,4,5,6,7,8} [{1,2,3,4,5,6,7,8} ...]]
+			   lanes to process (default: None)
+     --flowcell [FLOWCELL [FLOWCELL ...]]
+			   flowcells to process (default: None)
+     -B BATCH_SIZE, --batch_size BATCH_SIZE
+			   number of samples to process per node (default: 4)
+     -1 SAMPLE_TARGET_SUFFIX, --sample-target-suffix SAMPLE_TARGET_SUFFIX
+			   target suffix to add to the sample target (position 1
+			   in target generator tuple) (default: None)
+     -2 RUN_TARGET_SUFFIX, --run-target-suffix RUN_TARGET_SUFFIX
+			   target suffix to add to the sample run target
+			   (position 2 in target generator tuple) (default: None)
+     indir                 Input directory. Assumes that data in input directory
+			   is organized by sample/flowcell/sequences.fastq.gz
+
+   Ratatosk options. These arguments are passed directly to ratatosk_run_scilife.py:
+     --config-file CONFIG_FILE
+			   configuration file (default: None)
+     --custom-config CUSTOM_CONFIG
+			   custom configuration file (default: None)
+     --workers WORKERS     number of workers to use (default: 4)
+     --scheduler-host SCHEDULER_HOST
+			   host that runs scheduler (default: localhost)
+     task                  Task to run.
+
+
+As can be seen, there are three option groups; one for
+:py:mod:`drmaa`, one for modifying what samples are run, and one for
+ratatosk in general.
+
 
 At the very minimum, a command consists of the following
 

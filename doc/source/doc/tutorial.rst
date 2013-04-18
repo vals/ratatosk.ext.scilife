@@ -7,7 +7,7 @@ scripts.
 Pipelines
 ---------
 
-See also :mod:`rataosk`
+See also :mod:`ratatosk`
 
 
 Align
