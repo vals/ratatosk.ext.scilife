@@ -3,13 +3,18 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
+.. _ratatosk.ext.scilife:
+
 ratatosk.ext.scilife - a ratatosk extension
 ================================================
 
-`ratatosk.ext.scilife` is a `ratatosk` extension with custom
+.. warning:: :mod:`ratatosk.ext.scilife` is currently in pre-release status
+   and is under very active development. Use it at your own risk.
+
+
+:mod:`ratatosk.ext.scilife` is a :mod:`ratatosk` extension with custom
 configurations and functions for analysis of data generated at Science
 for Life Laboratory. 
-
 
 Documentation
 =============
@@ -20,10 +25,8 @@ Documentation
    changes
    api/index
 
-Indices and tables
-==================
 
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
-
+.. toctree::
+   :maxdepth: 2
+   
+   doc/index
