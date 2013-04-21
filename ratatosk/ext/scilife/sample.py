@@ -18,6 +18,7 @@ import logging
 import re
 from ratatosk.utils import rreplace
 from ratatosk.ext.scilife.bcbio import bcbio_config_to_sample_sheet
+from ratatosk.experiment import ISample, Sample
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -32,8 +33,9 @@ def collect_sample_runs(task):
     logging.debug("Collecting sample runs for {}".format(task.target))
     sample_runs = target_generator(os.path.dirname(os.path.dirname(task.target)), 
                                    sample=[os.path.basename(os.path.dirname(task.target))])
-    src_suffix = task.parent()[0]().suffix
-    bam_list = list(set([x[2] + os.path.basename(rreplace(task.target.replace(x[0], ""), "{}{}".format(task.label, task.suffix), src_suffix, 1)) for x in sample_runs]))
+    src_suffix = task.parent()[0]().sfx()
+    bam_list = list(set([x.prefix("sample_run") + os.path.basename(rreplace(task.target.replace(x.sample_id(), ""), "{}{}".format(task.label, task.suffix), src_suffix, 1)) for x in sample_runs]))
+    bam_list = list(set([x.prefix("sample_run") + os.path.basename(rreplace(task.target.replace(x.sample_id(), ""), "{}{}".format(task.label, task.suffix), src_suffix, 1)) for x in sample_runs]))
     logging.debug("Generated target bamfile list {}".format(bam_list))
     return bam_list
 
@@ -49,20 +51,17 @@ def generic_collect_sample_runs(task):
     sample_runs = generic_target_generator(os.path.dirname(os.path.dirname(task.target)), 
                                            sample=[os.path.basename(os.path.dirname(task.target))])
     src_suffix = task.parent()[0]().suffix
-    bam_list = list(set([x[2] + os.path.basename(rreplace(task.target.replace(x[0], ""), "{}{}".format(task.label, task.suffix), src_suffix, 1)) for x in sample_runs]))
+    bam_list = list(set([x.prefix("sample_run") + os.path.basename(rreplace(task.target.replace(x.sample_id(), ""), "{}{}".format(task.label, task.suffix), src_suffix, 1)) for x in sample_runs]))
     logging.debug("Generated target bamfile list {}".format(bam_list))
     return bam_list
-
 
 def collect_vcf_files(task, sample=None, flowcell=None, lane=None, **kwargs):
     logging.debug("Collecting vcf files for {}".format(task.target))
     sample_runs = target_generator(os.path.dirname(task.target))
     parent_cls = task.parent()[0]
-    vcf_list = list(set([x[1] + task.adl() + parent_cls().sfx()  for x in sample_runs]))
+    vcf_list = list(set([x.prefix("sample") + task.adl() + parent_cls().sfx() for x in sample_runs]))
     logging.debug("Generated target vcffile list {}".format(vcf_list))
     return vcf_list
-
-
 
 def generic_target_generator(indir, sample=None, flowcell=None, lane=None, **kwargs):
     """Generic target generator. Uses the directory structure only to
@@ -102,8 +101,10 @@ def generic_target_generator(indir, sample=None, flowcell=None, lane=None, **kwa
                 if not m:
                     logging.warn("File {} does not comply with format (.*)_[0-9]+(.fastq$|.fastq.gz$|.fq$|.fq.gz$); skipping".format(fq))
                     continue
-                targets.append((s, os.path.join(sampledir, s), 
-                                os.path.join(fc_dir, os.path.basename(m.group(1).rstrip("R[12]").rstrip("_")))))
+                smp = Sample(project_id=os.path.basename(os.path.dirname(sampledir)), sample_id = s, sample_prefix=os.path.join(sampledir, s), 
+                             sample_run_prefix=os.path.join(fc_dir, os.path.basename(m.group(1).rstrip("R[12]").rstrip("_"))),
+                             project_prefix=os.path.dirname(sampledir))
+                targets.append(smp)
     return targets
     
 
@@ -140,8 +141,10 @@ def target_generator(indir, sample=None, flowcell=None, lane=None, **kwargs):
                 continue
             for line in ssheet:
                 logging.info("Adding sample '{0}' from flowcell '{1}' (barcode '{2}') to analysis".format(s, fc, line['Index']))
-                targets.append((s, os.path.join(sampledir, s), 
-                                os.path.join(fc_dir, "{}_{}_L00{}".format(s, line['Index'], line['Lane'] ))))
+                smp = Sample(project_id=line['SampleProject'].replace("__", "."), sample_id = s,
+                             project_prefix=os.path.dirname(sampledir), sample_prefix=os.path.join(sampledir, s),
+                             sample_run_prefix=os.path.join(fc_dir, "{}_{}_L00{}".format(s, line['Index'], line['Lane'])))
+                targets.append(smp)
     return targets
 
 
