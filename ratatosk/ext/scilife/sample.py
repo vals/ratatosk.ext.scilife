@@ -71,14 +71,33 @@ def collect_vcf_files(task, sample=None, flowcell=None, lane=None, **kwargs):
 
 def generic_target_generator(indir, sample=None, flowcell=None, lane=None, **kwargs):
     """Generic target generator. Uses the directory structure only to
-    generate target names. Requires SciLife-like directory structure.
+    generate target names. Requires SciLife-like directory structure:
+
+    .. code-block:: text
+
+       |-- P001_101_index3
+       |   |-- 120924_AC003CCCXX
+       |   |   |-- P001_101_index3_TGACCA_L001_R1_001.fastq.gz
+       |   |   |-- P001_101_index3_TGACCA_L001_R2_001.fastq.gz
+       |   |-- 121015_BB002BBBXX
+       |   |   |-- P001_101_index3_TGACCA_L001_R1_001.fastq.gz
+       |   |   |-- P001_101_index3_TGACCA_L001_R2_001.fastq.gz
+       |-- P001_102_index6
+       |   `-- 120924_AC003CCCXX
+       |       |-- P001_102_index6_ACAGTG_L002_R1_001.fastq.gz
+       |       |-- P001_102_index6_ACAGTG_L002_R2_001.fastq.gz
+
+
+    Traverses input directory, descending two levels (corresponding to
+    sample, then flowcell), and finally collects sequence read files
+    based on a regular expression.
     
     :param indir: input directory
     :param sample: list of sample names to include
     :param flowcell: list of flowcells to include
     :param lane: list of lanes to include
 
-    :returns: list of targets
+    :return: list of :class:`ratatosk.experiment.Sample` objects
     """
     targets = []
     if not os.path.exists(indir):
@@ -116,17 +135,16 @@ def generic_target_generator(indir, sample=None, flowcell=None, lane=None, **kwa
                 targets.append(smp)
     return targets
     
-
 def target_generator(indir, sample=None, flowcell=None, lane=None, **kwargs):
-    """Make all desired target output names based on the final target
-    suffix. 
+    """Target generator function. Collect experimental units based on
+    information in SampleSheet.csv or bcbb-config.yaml files.
 
     :param indir: input directory
     :param sample: list of sample names to include
     :param flowcell: list of flowcells to include
     :param lane: list of lanes to include
 
-    :return: list of tuples consisting of sample, sample target prefix (merge target), sample run prefix (read pair prefix)
+    :return: list of :class:`ratatosk.experiment.Sample` objects
     """
     targets = []
     if not os.path.exists(indir):

@@ -12,7 +12,7 @@ Core Facility, Stockholm, are organized by directories *project name*,
 *sample id*, and *flowcell*. Each flowcell, finally, contains the
 sequence files (in gzipped fastq format) labelled with lane and
 barcode sequence information. For obvious reasons, the test data in
-:ref:`ngs.test.data <https://github.com/percyfal/ngs.test.data>`_ has
+`ngs.test.data <https://github.com/percyfal/ngs.test.data>`_ has
 been organized according to these principles. Running the command
 :program:`tree` on the project ``J.Doe_00_01`` yields
 
