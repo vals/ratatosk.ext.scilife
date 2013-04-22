@@ -19,6 +19,7 @@ import re
 from ratatosk.utils import rreplace
 from ratatosk.ext.scilife.bcbio import bcbio_config_to_sample_sheet
 from ratatosk.experiment import ISample, Sample
+from ratatosk import backend
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -31,10 +32,12 @@ def collect_sample_runs(task):
     :return: list of bam files for each sample run in a flowcell directory
     """
     logging.debug("Collecting sample runs for {}".format(task.target))
-    sample_runs = target_generator(os.path.dirname(os.path.dirname(task.target)), 
-                                   sample=[os.path.basename(os.path.dirname(task.target))])
+    if backend.__global_vars__.get("targets", None):
+        sample_runs = backend.__global_vars__.get("targets")
+    else:
+        sample_runs = target_generator_handler(os.path.dirname(os.path.dirname(task.target)), 
+                                               sample=[os.path.basename(os.path.dirname(task.target))])
     src_suffix = task.parent()[0]().sfx()
-    bam_list = list(set([x.prefix("sample_run") + os.path.basename(rreplace(task.target.replace(x.sample_id(), ""), "{}{}".format(task.label, task.suffix), src_suffix, 1)) for x in sample_runs]))
     bam_list = list(set([x.prefix("sample_run") + os.path.basename(rreplace(task.target.replace(x.sample_id(), ""), "{}{}".format(task.label, task.suffix), src_suffix, 1)) for x in sample_runs]))
     logging.debug("Generated target bamfile list {}".format(bam_list))
     return bam_list
@@ -57,7 +60,10 @@ def generic_collect_sample_runs(task):
 
 def collect_vcf_files(task, sample=None, flowcell=None, lane=None, **kwargs):
     logging.debug("Collecting vcf files for {}".format(task.target))
-    sample_runs = target_generator(os.path.dirname(task.target))
+    if backend.__global_vars__.get("targets", None):
+        sample_runs = [x for x in backend.__global_vars__.get("targets")]
+    else:
+        sample_runs = target_generator(os.path.dirname(task.target))
     parent_cls = task.parent()[0]
     vcf_list = list(set([x.prefix("sample") + task.adl() + parent_cls().sfx() for x in sample_runs]))
     logging.debug("Generated target vcffile list {}".format(vcf_list))
@@ -101,8 +107,11 @@ def generic_target_generator(indir, sample=None, flowcell=None, lane=None, **kwa
                 if not m:
                     logging.warn("File {} does not comply with format (.*)_[0-9]+(.fastq$|.fastq.gz$|.fq$|.fq.gz$); skipping".format(fq))
                     continue
+                sample_run_prefix = m.group(1)
+                if re.search("L[0-9]+_R[12]", sample_run_prefix):
+                    sample_run_prefix=os.path.join(fc_dir, os.path.basename(m.group(1).rstrip("R[12]").rstrip("_")))                    
                 smp = Sample(project_id=os.path.basename(os.path.dirname(sampledir)), sample_id = s, sample_prefix=os.path.join(sampledir, s), 
-                             sample_run_prefix=os.path.join(fc_dir, os.path.basename(m.group(1).rstrip("R[12]").rstrip("_"))),
+                             sample_run_prefix = sample_run_prefix,
                              project_prefix=os.path.dirname(sampledir))
                 targets.append(smp)
     return targets

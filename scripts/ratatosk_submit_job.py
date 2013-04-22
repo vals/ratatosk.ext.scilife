@@ -296,7 +296,7 @@ if __name__ == "__main__":
     # also collects sample information, but this step is necessary as
     # we need to wrap ratatosk_run_scilife.py in drmaa
     targets = tgt_gen_fun(indir=pargs.indir, sample=pargs.sample,
-                               flowcell=pargs.flowcell, lane=pargs.lane)
+                          flowcell=pargs.flowcell, lane=pargs.lane)
     # After getting run list, if output directory is different to
     # input directory, link raw data files to output directory and
     # remember to use this directory for ratatosk tasks. In this way
@@ -305,11 +305,10 @@ if __name__ == "__main__":
         pargs.outdir = pargs.indir
     if pargs.outdir != pargs.indir:
         targets = make_fastq_links(targets, pargs.indir, pargs.outdir)
-
     # Group samples
-    sorted_samples = sorted(targets, key=lambda t:t[0])
+    sorted_samples = sorted(targets, key=lambda t:t.sample_id())
     samples = {}
-    for k, g in itertools.groupby(sorted_samples, key=lambda t:t[0]):
+    for k, g in itertools.groupby(sorted_samples, key=lambda t:t.sample_id()):
         samples[k] = list(g)
 
     # Initialize command
