@@ -35,7 +35,6 @@ def collect_sample_runs(task):
                                    sample=[os.path.basename(os.path.dirname(task.target))])
     src_suffix = task.parent()[0]().sfx()
     bam_list = list(set([x.prefix("sample_run") + os.path.basename(rreplace(task.target.replace(x.sample_id(), ""), "{}{}".format(task.label, task.suffix), src_suffix, 1)) for x in sample_runs]))
-    bam_list = list(set([x.prefix("sample_run") + os.path.basename(rreplace(task.target.replace(x.sample_id(), ""), "{}{}".format(task.label, task.suffix), src_suffix, 1)) for x in sample_runs]))
     logging.debug("Generated target bamfile list {}".format(bam_list))
     return bam_list
 
@@ -101,8 +100,11 @@ def generic_target_generator(indir, sample=None, flowcell=None, lane=None, **kwa
                 if not m:
                     logging.warn("File {} does not comply with format (.*)_[0-9]+(.fastq$|.fastq.gz$|.fq$|.fq.gz$); skipping".format(fq))
                     continue
+                sample_run_prefix = m.group(1)
+                if re.search("L[0-9]+_R[12]", sample_run_prefix):
+                    sample_run_prefix=os.path.join(fc_dir, os.path.basename(m.group(1).rstrip("R[12]").rstrip("_")))                    
                 smp = Sample(project_id=os.path.basename(os.path.dirname(sampledir)), sample_id = s, sample_prefix=os.path.join(sampledir, s), 
-                             sample_run_prefix=os.path.join(fc_dir, os.path.basename(m.group(1).rstrip("R[12]").rstrip("_"))),
+                             sample_run_prefix = sample_run_prefix,
                              project_prefix=os.path.dirname(sampledir))
                 targets.append(smp)
     return targets

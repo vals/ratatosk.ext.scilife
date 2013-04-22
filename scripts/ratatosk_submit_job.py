@@ -305,7 +305,6 @@ if __name__ == "__main__":
         pargs.outdir = pargs.indir
     if pargs.outdir != pargs.indir:
         targets = make_fastq_links(targets, pargs.indir, pargs.outdir)
-
     # Group samples
     sorted_samples = sorted(targets, key=lambda t:t.sample_id())
     samples = {}
