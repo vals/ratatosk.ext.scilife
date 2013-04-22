@@ -16,7 +16,6 @@
 import luigi
 import os
 import sys
-from ratatosk import backend
 from ratatosk.config import setup_config
 from ratatosk.handler import setup_global_handlers
 import ratatosk.lib.align.bwa
