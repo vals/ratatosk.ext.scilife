@@ -28,6 +28,7 @@ import ratatosk.lib.utils.cutadapt
 from ratatosk.pipeline.haloplex import HaloPlex, HaloPlexSummary
 from ratatosk.pipeline.seqcap import SeqCap, SeqCapSummary
 from ratatosk.pipeline.align import Align, AlignSummary
+from ratatosk.report.sphinx import SphinxReport
 from ratatosk.ext.scilife.config import config_dict
 
 if __name__ == "__main__":
