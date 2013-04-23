@@ -32,11 +32,12 @@ def collect_sample_runs(task):
     :return: list of bam files for each sample run in a flowcell directory
     """
     logging.debug("Collecting sample runs for {}".format(task.target))
+    sample = os.path.basename(os.path.dirname(task.target))
     if backend.__global_vars__.get("targets", None):
-        sample_runs = backend.__global_vars__.get("targets")
+        sample_runs = [x for x in backend.__global_vars__.get("targets") if x.sample_id() == sample]
     else:
         sample_runs = target_generator_handler(os.path.dirname(os.path.dirname(task.target)), 
-                                               sample=[os.path.basename(os.path.dirname(task.target))])
+                                               sample=[sample])
     src_suffix = task.parent()[0]().sfx()
     bam_list = list(set([x.prefix("sample_run") + os.path.basename(rreplace(task.target.replace(x.sample_id(), ""), "{}{}".format(task.label, task.suffix), src_suffix, 1)) for x in sample_runs]))
     logging.debug("Generated target bamfile list {}".format(bam_list))
