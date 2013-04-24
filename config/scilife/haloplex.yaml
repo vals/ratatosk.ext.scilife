@@ -2,23 +2,27 @@
 settings:
   target_generator_handler: ratatosk.ext.scilife.sample.target_generator
   
-misc:
+ratatosk.lib.utils.misc:
   ResyncMates:
     parent_task: 
-      - ratatosk.lib.utils.cutadapt.CutadaptJobTask
-      - ratatosk.lib.utils.cutadapt.CutadaptJobTask
-cutadapt:
+      - ratatosk.lib.utils.cutadapt.Cutadapt
+      - ratatosk.lib.utils.cutadapt.Cutadapt
+
+ratatosk.lib.utils.cutadapt:
   Cutadapt:
     parent_task:
       - ratatosk.lib.utils.cutadapt.InputFastqFile
-      - ratatosk.lib.tools.fastqc.FastQCJobTask
+      - ratatosk.lib.tools.fastqc.FastQC
 
-fastqc:
-  parent_task: ratatosk.lib.utils.cutadapt.InputFastqFile
+ratatosk.lib.tools.fastqc:
+  FastQC:
+    parent_task: 
+      - ratatosk.lib.utils.cutadapt.InputFastqFile
 
-bwa:
+ratatosk.lib.align.bwa:
   Aln:
-    parent_task: ratatosk.lib.utils.misc.ResyncMatesJobTask
+    parent_task:
+      - ratatosk.lib.utils.misc.ResyncMates
   Sampe:
     label: .trimmed.sync
     add_label:
@@ -30,14 +34,9 @@ bwa:
       - _R1_001.trimmed.sync
       - _R2_001.trimmed.sync
 
-samtools:
-  SamToBam:
-    parent_task: ratatosk.lib.align.bwa.Sampe
-
-picard:
+ratatosk.lib.tools.picard:
   SortSam:
-    parent_task: ratatosk.lib.tools.samtools.SamToBam
-    #parent_task: ratatosk.lib.align.bwa.Bampe
+    parent_task: ratatosk.lib.align.bwa.Bampe
   MergeSamFiles:
     parent_task: ratatosk.lib.tools.picard.SortSam
     target_generator_handler: ratatosk.ext.scilife.sample.collect_sample_runs
@@ -50,7 +49,7 @@ picard:
   HsMetrics:
     parent_task: ratatosk.lib.tools.picard.MergeSamFiles
 
-gatk:
+ratatosk.lib.tools.gatk:
   RealignerTargetCreator:
     parent_task: ratatosk.lib.tools.picard.MergeSamFiles
   IndelRealigner:
@@ -71,12 +70,12 @@ gatk:
     parent_task: ratatosk.lib.tools.gatk.PrintReads
   UnifiedGenotyper:
     parent_task: ratatosk.lib.tools.gatk.ClipReads
-  VariantHaloFiltration:
-    parent_task: ratatosk.lib.tools.gatk.UnifiedGenotyper
   VariantEval:
     parent_task: ratatosk.pipeline.haloplex.VariantHaloFiltration
+  VariantHaloFiltration:
+    parent_task: ratatosk.lib.tools.gatk.UnifiedGenotyper
 
-htslib:
+ratatosk.lib.variation.htslib:
   VcfMerge:
     target_generator_handler: ratatosk.ext.scilife.sample.collect_vcf_files
     # We need to add a label for parent task IndexedBgzip since
@@ -84,6 +83,6 @@ htslib:
     add_label:
       - .trimmed.sync.sort.merge.realign.recal.clip.filtered
     
-tabix:
+ratatosk.lib.variation.tabix:
   Bgzip:
     parent_task: ratatosk.lib.tools.gatk.VariantFiltration

@@ -1,30 +1,31 @@
 # Project configuration file
-bwa:
-  bwaref: ~/opt/ngs_test_data/data/genomes/Hsapiens/hg19/bwa/chr11.fa
-  aln:
+# Change ~/opt/ to the prefix preceding the ngs.test.data installation directory
+ratatosk.lib.align.bwa:
+  bwaref: ~/opt/ngs.test.data/data/genomes/Hsapiens/hg19/bwa/chr11.fa
+  Aln:
     # NB: shouldn't work since this is a custom config file
-    parent_task: ratatosk.lib.align.bwa.BwaSampe
+    parent_task: ratatosk.lib.align.bwa.Sampe
     # However this should work
     options: [-e 2 -l 40]
   
-samtools:
+ratatosk.lib.tools.samtools:
   SamToBam:
-    parent_task: ratatosk.lib.align.bwa.BwaSampe
+    parent_task: ratatosk.lib.align.bwa.Sampe
 
-picard:
+ratatosk.lib.tools.picard:
   HsMetrics:
-    target_regions: ~/opt/ngs_test_data/data/genomes/Hsapiens/hg19/seqcap/chr11_targets.interval_list
-    bait_regions: ~/opt/ngs_test_data/data/genomes/Hsapiens/hg19/seqcap/chr11_baits.interval_list
+    target_regions: ~/opt/ngs.test.data/data/genomes/Hsapiens/hg19/seqcap/chr11_targets.interval_list
+    bait_regions: ~/opt/ngs.test.data/data/genomes/Hsapiens/hg19/seqcap/chr11_baits.interval_list
   # SortSam:
   #   parent_task: ratatosk.lib.tools.samtools.SamToBam
   MergeSamFiles:
     # How is this module found?!?
     parent_task: ratatosk.lib.tools.picard.SortSam
 
-gatk:
-  ref: ~/opt/ngs_test_data/data/genomes/Hsapiens/hg19/seq/chr11.fa
+ratatosk.lib.tools.gatk:
+  ref: ~/opt/ngs.test.data/data/genomes/Hsapiens/hg19/seq/chr11.fa
   knownSites: 
-    - ~/opt/ngs_test_data/data/genomes/Hsapiens/hg19/variation/dbsnp132_chr11.vcf
-  dbsnp: ~/opt/ngs_test_data/data/genomes/Hsapiens/hg19/variation/dbsnp132_chr11.vcf
-  train_indels: ~/opt/ngs_test_data/data/genomes/Hsapiens/hg19/variation/Mills_Devine_2hit.indels.vcf
+    - ~/opt/ngs.test.data/data/genomes/Hsapiens/hg19/variation/dbsnp132_chr11.vcf
+  dbsnp: ~/opt/ngs.test.data/data/genomes/Hsapiens/hg19/variation/dbsnp132_chr11.vcf
+  train_indels: ~/opt/ngs.test.data/data/genomes/Hsapiens/hg19/variation/Mills_Devine_2hit.indels.vcf
 

@@ -31,6 +31,9 @@ def setUpModule():
         "./projects/J.Doe_00_01/P001_102_index6/121015_BB002BBBXX/P001_102_index6_ACAGTG_L001_R1_001.fastq.gz", 
         "./projects/J.Doe_00_01/P001_102_index6/121015_BB002BBBXX/P001_102_index6_ACAGTG_L001_R2_001.fastq.gz", 
 
+        "./projects/J.Doe_00_01/P001_101_index3/P001_101_index3.sort.merge.vcf", 
+        "./projects/J.Doe_00_01/P001_102_index6/P001_102_index6.sort.merge.vcf", 
+
         ]
     for p in structure:
         path, file = os.path.split( p )
