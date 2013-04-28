@@ -74,6 +74,15 @@ ratatosk.lib.tools.gatk:
     parent_task: ratatosk.pipeline.haloplex.VariantHaloFiltration
   VariantHaloFiltration:
     parent_task: ratatosk.lib.tools.gatk.UnifiedGenotyper
+    options:
+      - -minimalVCF
+      - --sites_only
+    parent_task:
+      - ratatosk.lib.tools.gatk.VariantHaloFiltration
+    target_generator_handler: ratatosk.ext.scilife.sample.collect_vcf_files
+    add_label:
+      - trimmed.sync.sort.merge.realign.recal.clip.filtered
+
 
 ratatosk.lib.variation.htslib:
   VcfMerge:
