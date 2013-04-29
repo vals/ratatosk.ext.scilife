@@ -24,7 +24,7 @@ import ratatosk.lib.tools.samtools
 import ratatosk.lib.tools.picard
 import ratatosk.lib.annotation.annovar
 import ratatosk.lib.utils.cutadapt
-from ratatosk.pipeline.haloplex import HaloPlex, HaloPlexSummary
+from ratatosk.pipeline.haloplex import HaloPlex, HaloPlexSummary, HaloPlexCombine
 from ratatosk.pipeline.seqcap import SeqCap, SeqCapSummary
 from ratatosk.pipeline.align import Align, AlignSummary
 from ratatosk.report.sphinx import SphinxReport
