@@ -32,6 +32,8 @@ config_dict = {
     'HaloPlex' : {'config' : os.path.join(ratatosk.ext.scilife.__path__[0], os.pardir, os.pardir, os.pardir, "config", "scilife", "haloplex.yaml"),
                   'cls' : ratatosk.pipeline.haloplex.HaloPlex},
     'HaloPlexSummary' : {'config' : os.path.join(ratatosk.ext.scilife.__path__[0], os.pardir, os.pardir, os.pardir, "config", "scilife", "haloplex.yaml"),
-                         'cls' : ratatosk.pipeline.haloplex.HaloPlexSummary}
+                         'cls' : ratatosk.pipeline.haloplex.HaloPlexSummary},
+    'HaloPlexCombine' : {'config' : os.path.join(ratatosk.ext.scilife.__path__[0], os.pardir, os.pardir, os.pardir, "config", "scilife", "haloplex.yaml"),
+                         'cls' : ratatosk.pipeline.haloplex.HaloPlexCombine},
     }
 
