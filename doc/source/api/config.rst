@@ -5,7 +5,3 @@
 
 .. automodule:: ratatosk.ext.scilife.config
     :members:
-    :undoc-members:
-    :private-members:
-    :show-inheritance:
-
