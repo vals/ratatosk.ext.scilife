@@ -11,11 +11,15 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations under
 # the License.
+"""
+Provides attribute :attr:`config_dict` that defines configuration file
+locations for predefined workflows.
 
+"""
 import os
 import ratatosk.ext.scilife
 import ratatosk.pipeline
-# Define configuration file locations for predefined workflows
+
 config_dict = {
     'ratatosk' : {'config':os.path.join(ratatosk.ext.scilife.__path__[0], os.pardir, os.pardir, os.pardir, "config", "scilife", "ratatosk.yaml"),
                   'cls':None},
@@ -28,5 +32,8 @@ config_dict = {
     'HaloPlex' : {'config' : os.path.join(ratatosk.ext.scilife.__path__[0], os.pardir, os.pardir, os.pardir, "config", "scilife", "haloplex.yaml"),
                   'cls' : ratatosk.pipeline.haloplex.HaloPlex},
     'HaloPlexSummary' : {'config' : os.path.join(ratatosk.ext.scilife.__path__[0], os.pardir, os.pardir, os.pardir, "config", "scilife", "haloplex.yaml"),
-                         'cls' : ratatosk.pipeline.haloplex.HaloPlexSummary}
+                         'cls' : ratatosk.pipeline.haloplex.HaloPlexSummary},
+    'HaloPlexCombine' : {'config' : os.path.join(ratatosk.ext.scilife.__path__[0], os.pardir, os.pardir, os.pardir, "config", "scilife", "haloplex.yaml"),
+                         'cls' : ratatosk.pipeline.haloplex.HaloPlexCombine},
     }
+

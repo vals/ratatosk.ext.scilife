@@ -16,7 +16,6 @@
 import luigi
 import os
 import sys
-from ratatosk import backend
 from ratatosk.config import setup_config
 from ratatosk.handler import setup_global_handlers
 import ratatosk.lib.align.bwa
@@ -25,9 +24,10 @@ import ratatosk.lib.tools.samtools
 import ratatosk.lib.tools.picard
 import ratatosk.lib.annotation.annovar
 import ratatosk.lib.utils.cutadapt
-from ratatosk.pipeline.haloplex import HaloPlex, HaloPlexSummary
+from ratatosk.pipeline.haloplex import HaloPlex, HaloPlexSummary, HaloPlexCombine
 from ratatosk.pipeline.seqcap import SeqCap, SeqCapSummary
 from ratatosk.pipeline.align import Align, AlignSummary
+from ratatosk.report.sphinx import SphinxReport
 from ratatosk.ext.scilife.config import config_dict
 from ratatosk.ext.scilife.conversion import *
 
